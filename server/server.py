@@ -35,6 +35,8 @@ def createUser():
 
 @app.route("/welcome", methods=['POST'])
 def welcome():
+    """ Get the welcome message from the server
+    """
     userId = request.json["userId"]
     session = get_session_or_create(userId)
     return {
@@ -43,6 +45,8 @@ def welcome():
     
 @app.route("/chat", methods=['POST'])
 def chat():
+    """ Chat with ChatGPT
+    """
     userId = request.json["userId"]
     message = request.json["message"]
     session = get_session_or_create(userId)
@@ -52,6 +56,8 @@ def chat():
 
 @app.route("/chat_stream", methods=['POST'])
 def chat_stream():
+    """ Chat with ChatGPT, but streaming tokens
+    """
     userId = request.json["userId"]
     message = request.json["message"]
     session = get_session_or_create(userId)
@@ -65,6 +71,8 @@ def chat_stream():
 
 @app.route("/summary", methods=['POST'])
 def summary():
+    """ Get the summary of the chat history, and save that to the storage
+    """ 
     userId = request.json["userId"]
     session = get_session_or_create(userId)
     history = session.summary()
