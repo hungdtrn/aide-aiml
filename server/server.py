@@ -50,6 +50,14 @@ def chat():
         "msg": session.chat(message)
     }
 
+@app.route("/chat_stream", methods=['POST'])
+def chat():
+    userId = request.json["userId"]
+    message = request.json["message"]
+    session = get_session_or_create(userId)
+    generator = session.chat(message, streaming=True)
+    return app.response_class(generator, mimetype='text/plain')
+
 @app.route("/summary", methods=['POST'])
 def summary():
     userId = request.json["userId"]
