@@ -1,3 +1,5 @@
+from .chatgpt import ChatGPT
+
 def build_chat_model(model_type, history):
     if model_type == "chatgpt":
         return ChatGPT(history)

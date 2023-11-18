@@ -38,9 +38,9 @@ def welcome():
 def chat():
     userId = request.json["userId"]
     message = request.json["message"]
-    session = sessionDict[userId]
-    return {"msg": "server response\: {}".format(message)}
-
+    return {
+        "msg": sessionDict[userId].chat(message)
+    }
 
 
 if __name__ == "__main__":
