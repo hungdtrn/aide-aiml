@@ -35,7 +35,7 @@ message.write(post("welcome", {"userId": 0})["msg"])
 # Creating out a chat input
 prompt =  st.chat_input("Response.......")
 if prompt:
-    st.write(f"{prompt}")
+    st.write(f"{post('chat', {'userId': 0, 'message': prompt})['msg']}")
     
 #building out chat history
 if "messages" not in st.session_state:
