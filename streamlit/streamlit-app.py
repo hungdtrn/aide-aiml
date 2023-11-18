@@ -29,7 +29,6 @@ def post(path, obj):
  
 #Promt for Asking for a response 
 message = st.chat_message("assistant")
-post("createUser", {"userId": 0})
 message.write(post("welcome", {"userId": 0})["msg"])   
     
 # Creating out a chat input

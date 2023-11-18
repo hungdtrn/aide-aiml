@@ -1,8 +1,12 @@
 import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
+
 import json
 from flask import Flask, jsonify, request, render_template
 
 import storage
+from ai.chatsession import ChatSession
 
 app = Flask(__name__)
 sessionDict = {}
@@ -25,16 +29,9 @@ def createUser():
 def welcome():
     userId = request.json["userId"]
     history = storage.readHistory(userId)
-    sessionDict[userId] = {
-        "history": history
-    }
-    if history:
-        msg = "Welcome back!"
-    else:
-        msg = "Hello! It's great to know you!"
-
+    sessionDict[userId] = ChatSession(history=history)
     return {
-        "msg": msg
+        "msg": sessionDict[userId].welcome()
     }
     
 @app.route("/chat", methods=['POST'])
