@@ -14,8 +14,8 @@ class ChatSession:
         
         return msg
 
-    def chat(self, message):
-        return self.chatModel.chat(message)
+    def chat(self, message, streaming=False):
+        return self.chatModel.chat(message, streaming)
 
     def summary(self):
         return self.chatModel.summary()
