@@ -18,7 +18,8 @@ prompt = st.text_input("Start journaling your thoughts")
 if st.button('Generate response'):
     #response code here
     response = "TEST STRING Sorry to hear that"
-    st.write(response)
+    if prompt != None: 
+        st.write(response)
 
 # response =
 # Print response
