@@ -29,9 +29,13 @@ def welcome():
         "history": history
     }
     if history:
-        return "Welcome back!"
+        msg = "Welcome back!"
     else:
-        return "Hello! It's great to know you!"
+        msg = "Hello! It's great to know you!"
+
+    return {
+        "msg": msg
+    }
     
 @app.route("/chat", methods=['POST'])
 def chat():
