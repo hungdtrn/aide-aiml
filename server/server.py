@@ -3,7 +3,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
 import json
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, Response
 
 import storage
 from ai.chatsession import ChatSession
@@ -51,12 +51,17 @@ def chat():
     }
 
 @app.route("/chat_stream", methods=['POST'])
-def chat():
+def chat_stream():
     userId = request.json["userId"]
     message = request.json["message"]
     session = get_session_or_create(userId)
-    generator = session.chat(message, streaming=True)
-    return app.response_class(generator, mimetype='text/plain')
+    response_gen = session.chat(message, streaming=True)
+    def generate():
+        for word in response_gen:
+            yield word
+
+    response = app.response_class(generate(), mimetype='text/text')
+    return response
 
 @app.route("/summary", methods=['POST'])
 def summary():
