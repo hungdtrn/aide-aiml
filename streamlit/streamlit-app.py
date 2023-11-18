@@ -13,13 +13,11 @@ st.title("AIDe")
 
 # First prompt
 prompt = st.text_input("Start journaling your thoughts")
-response = "TEST STRING Sorry to hear that"
 # Button
 if st.button('Generate response'):
+    response = "TEST STRING Sorry to hear that"
     st.write(response)
 
-if prompt != None:
-    st.write(response)
 
 # response =
 # Print response
