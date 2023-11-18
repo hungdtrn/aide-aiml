@@ -42,7 +42,7 @@ def chat():
     userId = request.json["userId"]
     message = request.json["message"]
     session = sessionDict[userId]
-    return {"msg": "sever response\: {}".format(message)}
+    return {"msg": "server response\: {}".format(message)}
 
 
 
