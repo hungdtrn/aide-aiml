@@ -5,6 +5,7 @@ from flask import Flask, jsonify, request, render_template
 import storage
 
 app = Flask(__name__)
+sessionDict = {}
 
 @app.route('/')
 def test():
@@ -12,8 +13,25 @@ def test():
 
 @app.route('/createUser', methods=['POST'])
 def createUser():
-    storage.writeUser(request.json["userId"], request.json)
+    userId = request.json["userId"]
+    storage.writeUser(userId, request.json)
+    storage.writeHistory(userId, [])
+    sessionDict[userId] = {
+        "history": [],
+    }
     return json.dumps({"userId": request.json["userId"]})
+
+@app.route("/welcome", methods=['POST'])
+def welcome():
+    userId = request.json["userId"]
+    history = storage.readHistory(userId)
+    sessionDict[userId] = {
+        "history": history
+    }
+    if history:
+        return "Welcome back!"
+    else:
+        return "Hello! It's great to know you!"
 
 
 if __name__ == "__main__":

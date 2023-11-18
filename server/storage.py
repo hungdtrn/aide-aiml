@@ -7,6 +7,12 @@ STORAGE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./local
 def writeUser(userId, user):
     upload(f"user/{userId}.json", json.dumps(user, indent=2))
 
+def writeHistory(userId, history):
+    upload(f"history/{userId}.json", json.dumps(history, indent=2))
+
+def readHistory(userId):
+    return download(f"history/{userId}.json")
+
 def upload(blob_name, content):
     """  Add ${content} to the file wih the path ${blob_name}
     """
