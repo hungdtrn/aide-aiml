@@ -23,9 +23,9 @@ def post(path, obj):
 #prompt = st.text_input("Start journaling your thoughts")
 
 # Button
-#if st.button('Generate response'):
-#    response = "TEST STRING Sorry to hear that"
-#    st.write(response)
+if st.button('Summary'):
+   response = post("summary", {"userId": 0})
+   st.write(response)
  
 #Promt for Asking for a response 
 message = st.chat_message("assistant")

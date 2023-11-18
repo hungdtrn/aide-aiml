@@ -16,3 +16,6 @@ class ChatSession:
 
     def chat(self, message):
         return self.chatModel.chat(message)
+
+    def summary(self):
+        return self.chatModel.summary()

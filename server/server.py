@@ -42,6 +42,10 @@ def chat():
         "msg": sessionDict[userId].chat(message)
     }
 
+@app.route("/summary", methods=['POST'])
+def summary():
+    userId = request.json["userId"]
+    return sessionDict[userId].summary()
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug="True", port=8080)
