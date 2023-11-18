@@ -32,6 +32,14 @@ def welcome():
         return "Welcome back!"
     else:
         return "Hello! It's great to know you!"
+    
+@app.route("/chat", methods=['POST'])
+def chat():
+    userId = request.json["userId"]
+    message = request.json["message"]
+    session = sessionDict[userId]
+    return message
+
 
 
 if __name__ == "__main__":
