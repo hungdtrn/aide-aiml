@@ -25,7 +25,7 @@ def post(path, obj):
 # Button
 if st.button('Summary'):
    response = post("summary", {"userId": 0})
-   st.write(response)
+   st.write(json.dumps(response, indent=2))
  
 #Promt for Asking for a response 
 message = st.chat_message("assistant")

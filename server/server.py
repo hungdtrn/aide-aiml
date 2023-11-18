@@ -45,7 +45,11 @@ def chat():
 @app.route("/summary", methods=['POST'])
 def summary():
     userId = request.json["userId"]
-    return sessionDict[userId].summary()
+    history = sessionDict[userId].summary()
+    storage.writeHistory(userId, history)
+    return {
+        "history": history
+    }
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug="True", port=8080)
