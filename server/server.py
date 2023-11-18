@@ -11,6 +11,14 @@ from ai.chatsession import ChatSession
 app = Flask(__name__)
 sessionDict = {}
 
+def get_session_or_create(userId):
+    if userId in sessionDict:
+        return sessionDict[userId]
+    else:
+        history = storage.readHistory(userId)
+        sessionDict[userId] = ChatSession(history=history)
+        return sessionDict[userId]
+
 @app.route('/')
 def test():
     return "Success"
@@ -28,24 +36,25 @@ def createUser():
 @app.route("/welcome", methods=['POST'])
 def welcome():
     userId = request.json["userId"]
-    history = storage.readHistory(userId)
-    sessionDict[userId] = ChatSession(history=history)
+    session = get_session_or_create(userId)
     return {
-        "msg": sessionDict[userId].welcome()
+        "msg": session.welcome()
     }
     
 @app.route("/chat", methods=['POST'])
 def chat():
     userId = request.json["userId"]
     message = request.json["message"]
+    session = get_session_or_create(userId)
     return {
-        "msg": sessionDict[userId].chat(message)
+        "msg": session.chat(message)
     }
 
 @app.route("/summary", methods=['POST'])
 def summary():
     userId = request.json["userId"]
-    history = sessionDict[userId].summary()
+    session = get_session_or_create(userId)
+    history = session.summary()
     storage.writeHistory(userId, history)
     return {
         "history": history
