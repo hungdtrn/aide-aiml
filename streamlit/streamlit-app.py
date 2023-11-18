@@ -3,7 +3,7 @@ import requests
 import json
 # from utils import createUser, chat, post
 # Page title
-st.title("AIDe")
+st.title("AIDE")
 
 server_url = "http://127.0.0.1:8080"
 def post(path, obj):
