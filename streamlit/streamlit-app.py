@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 import json
-from utils import createUser, chat, post
+# from utils import createUser, chat, post
 # Page title
 st.title("AIDe")
 
@@ -22,15 +22,3 @@ if st.button('Generate response'):
 
 # response =
 # Print response
-
-
-
-
-
-
-
-
-
-    response = createUser("1", "shane", "01234567")
-    userId = response["userId"]
-    print(chat(userId, "good morning")['content'])
