@@ -127,6 +127,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+# AIDE application Python virtual environment file
+venv_aide/
 
 # Spyder project settings
 .spyderproject
@@ -160,3 +162,4 @@ cython_debug/
 #.idea/
 
 server/localStorage/
+.env
