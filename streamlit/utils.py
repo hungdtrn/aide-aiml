@@ -1,6 +1,8 @@
 import requests
 import json
 
+server_url = "http://127.0.0.1:8080"
+
 # Write util files here such as createUser, chat, post and server url
 def post(path, obj):
     headers = {'Content-type': 'application/json'}

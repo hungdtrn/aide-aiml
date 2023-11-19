@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 import json
-from utils import createUser, chat, post, stream
+from utils import post, stream
 # Page title
 st.title("AIDE")
 
