@@ -3,7 +3,12 @@ import requests
 import json
 from utils import post, stream
 # Page title
-st.title("Patient Chat")
+st.title("A.I.De")
+st.text("Patient Page")
+
+# NOTE -  This code was copied from streamlit-app.py on 20 Nov at 10:45 am.
+# It's not reflective of the current version, for testing purposes only
+
 
 server_url = "http://127.0.0.1:8080"
 
