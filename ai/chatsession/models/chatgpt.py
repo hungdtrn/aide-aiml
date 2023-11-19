@@ -11,7 +11,8 @@ from langchain.schema import (
     LLMResult,
     messages_from_dict, messages_to_dict
 )
-from langchain.callbacks.streaming_stdout import BaseCallbackHandler
+# from langchain.callbacks.streaming_stdout import BaseCallbackHandler
+from langchain.callbacks.base import BaseCallbackHandler
 from queue import Queue
 from threading import Event, Thread
 from typing import Any, Generator, Union
