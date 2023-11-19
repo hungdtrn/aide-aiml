@@ -163,3 +163,4 @@ cython_debug/
 
 server/localStorage/
 .env
+.python-version
