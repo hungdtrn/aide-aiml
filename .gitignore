@@ -163,5 +163,3 @@ cython_debug/
 
 server/localStorage/
 .env
-
-server/ai
