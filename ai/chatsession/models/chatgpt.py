@@ -4,7 +4,7 @@ import openai
 from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
 from langchain.chat_models import ChatOpenAI
-from langchain.chains import ConversationChain
+from langchain.chains import ConversationChain, LLMChain
 from langchain.memory.chat_message_histories.in_memory import ChatMessageHistory
 from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain.schema import (
@@ -100,7 +100,6 @@ AI: """
         )
         return chain(message)
 
-
     def chat(self, message, streaming):
         if not streaming:
             self.model.streaming = False
@@ -117,9 +116,7 @@ AI: """
             response_gen = handler.get_response_gen()
             return response_gen
 
-
-    
-    def summary(self):
+    def _update_history(self):
         messages = self.memory.chat_memory.messages
         ingest_to_db = messages_to_dict(messages)
         conversations = []
@@ -131,11 +128,41 @@ AI: """
             "date": time.time(),
             "conversation": conversations,
         })
-        self.history[-1]["currentSummary"] = "TODO"
-        self.history[-1]["longtermSummary"] = "TODO"
+        self.n_old_msgs = len(ingest_to_db)
 
+    def _conversation2string(self, converstaion):
+        out = ""
+        for item in converstaion:
+            for k, v in item.items():
+                out += "{}: {}".format(k, v) + "\n"
+        return out    
+
+    def _summary(self):
+        currentConversation = self.history[-1]["conversation"]
+        short_summary_prompt_template = """This is a conversation between a patient and an AI Therapist. Summarize the patient's emotional state. This summary will be used to assess the patient's mental health.
+
+{new_lines}
+"""    
+        short_summary_prompt = PromptTemplate(input_variables=["new_lines"],
+                                              template=short_summary_prompt_template)
+        short_summary_chain = LLMChain(llm=self.model, prompt=short_summary_prompt)
+        out = short_summary_chain(currentConversation)["text"]
+        return out
+
+
+    def summary(self):
+        # Update the history conversation
+        self._update_history()
+
+        # Summarise the conversation
+        self.model.streaming = False
+        self.model.callbacks = []
+        
+        short_summary = self._summary()
+        self.history[-1]["currentSummary"] = short_summary
+        self.history[-1]["longtermSummary"] = "TODO"
+        
         # messages up to this time are summarized
         # new messages will be concidered new conversation
-        self.n_old_msgs = len(ingest_to_db)
 
         return self.history
