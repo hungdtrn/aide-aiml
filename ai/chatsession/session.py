@@ -10,8 +10,8 @@ class ChatSession:
         if self.history:
             msg = "Welcome back!"
         else:
-            msg = "Hello! It's great to know you!"
-        
+            msg = "Hi! Please tell me about your day, or tell me how you are feeling "
+
         return msg
 
     def chat(self, message, streaming=False):
