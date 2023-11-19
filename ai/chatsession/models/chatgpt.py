@@ -58,7 +58,8 @@ class ChatGPT:
 
         self.n_old_msgs = 0
         self.history = history
-        self.model = ChatOpenAI(temperature=.7, model_name="gpt-3.5-turbo") 
+        self.model = ChatOpenAI(temperature=.7, model_name="gpt-3.5-turbo")
+        self.summary_model = ChatOpenAI(temperature=.7, model_name="gpt-3.5-turbo") 
         
         if self.history:
             self.memory = ConversationBufferMemory(chat_memory=self._loadHistoryToMemory(self.history))
@@ -138,16 +139,60 @@ AI: """
         return out    
 
     def _summary(self):
+        """ Do two things:
+        1. Summary the conversation in the current session - conversationSummary
+        2. Summary the development of the patient's mental state so far - developmentSummary
+        """
         currentConversation = self.history[-1]["conversation"]
-        short_summary_prompt_template = """This is a conversation between a patient and an AI Therapist. Summarize the patient's emotional state. This summary will be used to assess the patient's mental health.
+        conversation_summary_prompt_template = """This is a conversation between a patient and an AI Therapist. Summarize the patient's emotional state. This summary will be used to assess the patient's mental health.
 
 {new_lines}
 """    
-        short_summary_prompt = PromptTemplate(input_variables=["new_lines"],
-                                              template=short_summary_prompt_template)
-        short_summary_chain = LLMChain(llm=self.model, prompt=short_summary_prompt)
-        out = short_summary_chain(currentConversation)["text"]
-        return out
+        development_summary_prompt_template = """This is a conversation between a patient and an AI Therapist. 
+Progressively summarize the patient's emotional state, building upon the previous summary to generate a new assessment of their mental health.
+
+EXAMPLE
+Current summary:
+The patient is feeling bad today because they have just broken up with their girlfriend. They express sadness and hurt over the end of the relationship. They are looking for someone to talk to and seek support from.
+
+New lines of conversation:
+Human: Could not get over her!
+AI: Breakups can be really tough, and it's completely understandable that it may take some time to get over someone you cared about. Remember that healing takes time and it's okay to feel sad or even miss your ex. It might be helpful to focus on self-care and doing things that make you feel good. Is there anything in particular that you're finding difficult about getting over her?
+
+New summary:
+The patient is experiencing sadness and hurt from a recent breakup, struggling to get over their ex-partner. They express difficulty and sadness, indicating a need for support and understanding during this challenging time.
+
+END OF EXAMPLE
+
+Current summary:
+{summary}
+
+New lines of conversation:
+{new_lines}
+
+New summary:
+"""
+
+        conversation_summary_prompt = PromptTemplate(input_variables=["new_lines"],
+                                              template=conversation_summary_prompt_template)
+        
+        development_summary_prompt = PromptTemplate(template=development_summary_prompt_template,
+                                                    input_variables=["summary", "new_lines"])
+        
+        conversation_chain = LLMChain(llm=self.model, prompt=conversation_summary_prompt)
+
+        conversation_summary = conversation_chain(currentConversation)["text"]
+        
+        if len(self.history) <= 1:
+            development_summary = conversation_summary
+        else:
+            development_chain = LLMChain(llm=self.model, prompt=development_summary_prompt)
+            pastSummary = self.history[-2].get("longtermSummary", "")
+            development_summary = development_chain({"summary": pastSummary, 
+                                                     "new_lines": currentConversation})["text"]
+
+
+        return conversation_summary, development_summary
 
 
     def summary(self):
@@ -158,9 +203,9 @@ AI: """
         self.model.streaming = False
         self.model.callbacks = []
         
-        short_summary = self._summary()
-        self.history[-1]["currentSummary"] = short_summary
-        self.history[-1]["longtermSummary"] = "TODO"
+        conversation_summary, development_summary = self._summary()
+        self.history[-1]["conversationSummary"] = conversation_summary
+        self.history[-1]["developmentSummary"] = development_summary
         
         # messages up to this time are summarized
         # new messages will be concidered new conversation
