@@ -2,13 +2,15 @@
 
 Competition entry for the [ML/A.I Hack-a-thon 2023](https://www.aihackmelb.com) ... made with love and care in Melbourne ... for everyone !
 
-[For developer technical documentation click here](ReadMe_developers.md) ☺
+**[For developer technical documentation click here](ReadMe_developers.md) ☺**
 
 ## Guide for the competition judges
 
 Welcome judges, thanks for taking the time to review our competition entry !
 
 ***TODO: Insert architecture overview diagram here***
+
+Source code repository: [https://github.com/shaneantonio/aide-aiml](https://github.com/shaneantonio/aide-aiml)
 
 ## Development team members
 

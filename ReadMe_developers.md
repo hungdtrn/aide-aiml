@@ -1,6 +1,6 @@
 # AIDE: Aged care assistant and companion
 
-[Competition judge's guide is here](ReadMe.md) ☺
+**[Competition judge's guide is here](ReadMe.md) ☺**
 
 ## Technical documentation for developers
 
@@ -9,8 +9,6 @@ The AIDE system consists of three servers that provide the A.I assistant and com
 - Application server
 - Streamlit User Interface server
 - Voice User Interface server
-
-Source code repository: [https://github.com/shaneantonio/aide-aiml](https://github.com/shaneantonio/aide-aiml)
 
 ***TODO: Insert architecture overview diagram here***
 
