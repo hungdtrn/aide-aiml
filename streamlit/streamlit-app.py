@@ -47,6 +47,7 @@ prompt = st.chat_input("Type Message.......")
 # ------------------- End Hung's implementation ------------------
  
 
+
 # Implementation of the chat history and containerized conversation
 if prompt:
     # Display user message in chat message container
@@ -56,18 +57,20 @@ if prompt:
     
     out_stream = stream("chat_stream", {'userId': 0, 'message': prompt})
     #st.chat_message("user").write(prompt)
-    x = []
-    for line in out_stream:
-        x.append(line.decode("utf-8"))
-    response = ''.join(x)
-    # Display assistant response in chat message container
+    
     with st.chat_message("assistant"):
-        st.markdown(response)
-        
-    # Add assistant response to chat history
-    st.session_state.messages.append({"role": "assistant", "content": response})
+        # Creating an empty array to store stream text
+        report = []
+        res_box = st.empty() # create an empty box
+        ## Joes Implementation for stream chat
+        for line in out_stream:
+            # we get the output tokens by tokens, and we show them one by one
+            report.append(line.decode("utf-8"))# append the token to the report list
+            # Clean the string
+            result = "".join(report).strip()
+            result= result.replace("\n","")    
+            res_box.markdown(f'*{result}*')
+            
+        # Add assistant response to chat history
+        st.session_state.messages.append({"role": "assistant", "content": f'*{result}*'})
 
-
-
-# response =
-# Print response
