@@ -50,9 +50,9 @@ Note: It is entirely possible to develop a standard JavaScript / HTML / CSS web 
 
 The Streamlit UI server provides standard web server (HTML / HTTP endpoint) that can be used by a web browser directly.
 
-*Current working directory: Top-level of the aide-aiml repository*
+*Current working directory: streamlit subfolder*
 
-    streamlit run streamlit/streamlit-app.py
+    streamlit run streamlit-app.py
     # You can now view your Streamlit app in your browser.
     # Local URL: http://localhost:8501  <-- Web browser host address (URL)
 
@@ -70,8 +70,8 @@ The Voice UI server provides a conversation interface for non-technical users, e
 
 - Server
   - createUserAPI
-  - welcome message 
+  - welcome message
   - receive chat & response
   - support streaming
-  - ADD RAG feature in the prompt 
+  - ADD RAG feature in the prompt
   - Change the welcome message to engage in the conversation (e.g., I want to know more about you?)
