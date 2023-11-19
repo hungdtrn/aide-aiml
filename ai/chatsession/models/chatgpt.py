@@ -1,4 +1,7 @@
 import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
+
 import time
 import openai
 from dotenv import load_dotenv
@@ -16,6 +19,7 @@ from langchain.callbacks.base import BaseCallbackHandler
 from queue import Queue
 from threading import Event, Thread
 from typing import Any, Generator, Union
+from prompts import get_template
 
 
 class StreamingGeneratorCallbackHandler(BaseCallbackHandler):
@@ -66,6 +70,9 @@ class ChatGPT:
         else:
             self.memory = ConversationBufferMemory()
 
+        self.human_prefix = "Human"
+        self.ai_prefix = "AI"
+
     def _loadHistoryToMemory(self, history):
         out = []
         for sessions in history:
@@ -85,15 +92,11 @@ class ChatGPT:
         return retrieved_chat_history
 
     def _chat(self, message, **kwargs):
-        prompt = """The following is a friendly conversation between a human and an AI Therapist. The AI is friendly and supportive to the human. The AI's responses should prioritize the well-being of the human and avoid saying anything harmful.
+        templates = get_template()
+        prompt_template = templates.format_prompt(templates.CHAT_TEMPLATE,
+                                                  human_prefix=self.human_prefix, ai_prefix=self.ai_prefix)
 
-Current conversation:
-{history}
-
-Human: {input}
-AI: """
-
-        prompt = PromptTemplate.from_template(prompt)
+        prompt = PromptTemplate.from_template(prompt_template)
         chain = ConversationChain(
             prompt=prompt,
             llm=self.model,
@@ -138,61 +141,49 @@ AI: """
                 out += "{}: {}".format(k, v) + "\n"
         return out    
 
+    def _conversation_summary(self, currentConversation):
+        templates = get_template()
+        conversation_summary_template = templates.format_prompt(templates.CONVERSATION_SUMMARY_TEMPLATE,
+                                                                human_prefix=self.human_prefix,
+                                                                ai_prefix=self.ai_prefix)
+        conversation_summary_prompt = PromptTemplate(input_variables=["new_lines"],
+                                                     template=conversation_summary_template)
+        conversation_chain = LLMChain(llm=self.model, prompt=conversation_summary_prompt)
+
+        conversation_summary = conversation_chain(currentConversation)["text"]
+        return conversation_summary
+    
+    def _development_summary(self, currentConversation):
+        templates = get_template()
+        
+        development_summary_template = templates.format_prompt(templates.DEVELOPMENT_SUMMARY_TEMPLATE,
+                                                               human_prefix=self.human_prefix,
+                                                               ai_prefix=self.ai_prefix)
+
+        
+        development_summary_prompt = PromptTemplate(template=development_summary_template,
+                                                    input_variables=["summary", "new_lines"])
+
+        development_chain = LLMChain(llm=self.model, prompt=development_summary_prompt)
+        pastSummary = self.history[-2].get("longtermSummary", "")
+        development_summary = development_chain({"summary": pastSummary, 
+                                                    "new_lines": currentConversation})["text"]
+
+        return development_summary
+
     def _summary(self):
         """ Do two things:
         1. Summary the conversation in the current session - conversationSummary
         2. Summary the development of the patient's mental state so far - developmentSummary
         """
         currentConversation = self.history[-1]["conversation"]
-        conversation_summary_prompt_template = """This is a conversation between a patient and an AI Therapist. Summarize the patient's emotional state. This summary will be used to assess the patient's mental health.
-
-{new_lines}
-"""    
-        development_summary_prompt_template = """This is a conversation between a patient and an AI Therapist. 
-Progressively summarize the patient's emotional state, building upon the previous summary to generate a new assessment of their mental health.
-
-EXAMPLE
-Current summary:
-The patient is feeling bad today because they have just broken up with their girlfriend. They express sadness and hurt over the end of the relationship. They are looking for someone to talk to and seek support from.
-
-New lines of conversation:
-Human: Could not get over her!
-AI: Breakups can be really tough, and it's completely understandable that it may take some time to get over someone you cared about. Remember that healing takes time and it's okay to feel sad or even miss your ex. It might be helpful to focus on self-care and doing things that make you feel good. Is there anything in particular that you're finding difficult about getting over her?
-
-New summary:
-The patient is experiencing sadness and hurt from a recent breakup, struggling to get over their ex-partner. They express difficulty and sadness, indicating a need for support and understanding during this challenging time.
-
-END OF EXAMPLE
-
-Current summary:
-{summary}
-
-New lines of conversation:
-{new_lines}
-
-New summary:
-"""
-
-        conversation_summary_prompt = PromptTemplate(input_variables=["new_lines"],
-                                              template=conversation_summary_prompt_template)
-        
-        development_summary_prompt = PromptTemplate(template=development_summary_prompt_template,
-                                                    input_variables=["summary", "new_lines"])
-        
-        conversation_chain = LLMChain(llm=self.model, prompt=conversation_summary_prompt)
-
-        conversation_summary = conversation_chain(currentConversation)["text"]
-        
+        currentSummary = self._conversation_summary(currentConversation)
         if len(self.history) <= 1:
-            development_summary = conversation_summary
+            developmentSummary = currentSummary
         else:
-            development_chain = LLMChain(llm=self.model, prompt=development_summary_prompt)
-            pastSummary = self.history[-2].get("longtermSummary", "")
-            development_summary = development_chain({"summary": pastSummary, 
-                                                     "new_lines": currentConversation})["text"]
+            developmentSummary = self._development_summary(currentConversation)
 
-
-        return conversation_summary, development_summary
+        return currentSummary, developmentSummary
 
 
     def summary(self):
