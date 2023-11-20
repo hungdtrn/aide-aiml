@@ -52,7 +52,7 @@ The Streamlit UI server provides standard web server (HTML / HTTP endpoint) that
 
 *Current working directory: streamlit subfolder*
 
-    streamlit run streamlit-app.py
+    streamlit run home.py
     # You can now view your Streamlit app in your browser.
     # Local URL: http://localhost:8501  <-- Web browser host address (URL)
 
