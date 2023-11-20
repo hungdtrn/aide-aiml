@@ -50,8 +50,8 @@ Note: It is entirely possible to develop a standard JavaScript / HTML / CSS web 
 
 The Streamlit UI server provides standard web server (HTML / HTTP endpoint) that can be used by a web browser directly.
 
-*Current working directory: streamlit subfolder*
-
+*Current working directory: Top-level of the aide-aiml repository*
+    cd streamlit
     streamlit run home.py
     # You can now view your Streamlit app in your browser.
     # Local URL: http://localhost:8501  <-- Web browser host address (URL)
