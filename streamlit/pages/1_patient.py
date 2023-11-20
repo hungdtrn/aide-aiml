@@ -58,26 +58,30 @@ prompt = st.chat_input("Type Message.......")
 
 # Implementation of the chat history and containerized conversation
 if prompt:
-    # Display user message in chat message container
-    st.chat_message("user").markdown(prompt)
     # Add user message to chat history
-    st.session_state.messages.append({"role": "user", "content": prompt})
-
-    out_stream = stream("chat_stream", {'userId': 0, 'message': prompt})
-    #st.chat_message("user").write(prompt)
-
-    with st.chat_message("assistant"):
+    st.session_state.messages.append({"role": "user", "content": prompt})    
+    try:
+        # Display user message in chat message container
+        st.chat_message("user").markdown(prompt)
+        out_stream = stream("chat_stream", {'userId': 0, 'message': prompt})
+        #st.chat_message("user").write(prompt)
+        with st.chat_message("assistant"):
         # Creating an empty array to store stream text
-        report = []
-        res_box = st.empty() # create an empty box
-        ## Joes Implementation for stream chat
-        for line in out_stream:
-            # we get the output tokens by tokens, and we show them one by one
-            report.append(line.decode("utf-8"))# append the token to the report list
-            # Clean the string
-            result = "".join(report).strip()
-            result= result.replace("\n","")
-            res_box.markdown(f'*{result}*')
+            report = []
+            res_box = st.empty() # create an empty box
+            ## Joes Implementation for stream chat
+            for line in out_stream:
+                # we get the output tokens by tokens, and we show them one by one
+                report.append(line.decode("utf-8"))# append the token to the report list
+                # Clean the string
+                result = "".join(report).strip()
+                result= result.replace("\n","")
+                res_box.markdown(f'*{result}*')
 
-        # Add assistant response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": f'*{result}*'})
+                # Add assistant response to chat history
+                st.session_state.messages.append({"role": "assistant", "content": f'*{result}*'})
+    except:
+        print('') ## Need to add error log to server
+        
+
+
