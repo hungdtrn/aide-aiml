@@ -3,8 +3,8 @@ import requests
 import json
 from utils import post, stream
 # Page title
-st.title("A.I.De")
-st.text("Patient Page")
+st.title("AIDE")
+st.text("Patient page")
 
 # NOTE -  This code was copied from streamlit-app.py on 20 Nov at 10:45 am.
 # It's not reflective of the current version, for testing purposes only
