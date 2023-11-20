@@ -4,7 +4,9 @@
 
 ## Technical documentation for developers
 
-The AIDE system consists of three servers that provide the A.I assistant and companion back-end ... along with the Web and Voice user interface front-ends.
+The AIDE system consists of three software servers that provide the
+A.I assistant and companion back-end ... along with the Web and Voice
+user interface front-ends.
 
 - Application server
 - Streamlit User Interface server
@@ -12,7 +14,7 @@ The AIDE system consists of three servers that provide the A.I assistant and com
 
 ***TODO: Insert architecture overview diagram here***
 
-## Local installation and execution
+## Local installation and run the system
 
 #### Prerequisites
 
@@ -51,6 +53,7 @@ Note: It is entirely possible to develop a standard JavaScript / HTML / CSS web 
 The Streamlit UI server provides standard web server (HTML / HTTP endpoint) that can be used by a web browser directly.
 
 *Current working directory: Top-level of the aide-aiml repository*
+
     cd streamlit
     streamlit run home.py
     # You can now view your Streamlit app in your browser.
@@ -62,7 +65,11 @@ The Voice UI server provides a conversation interface for non-technical users, e
 
 ***TO BE COMPLETED ***
 
-## Cloud vendor (GCP) deployment and execution
+## Cloud vendor (GCP) deployment and run the system
+
+    cd server
+    docker build -f Dockerfile -t aide .
+    docker run --rm aide
 
 ***TO BE COMPLETED, IF REQUIRED, AS TIME PERMITS ***
 
