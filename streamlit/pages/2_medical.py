@@ -13,12 +13,16 @@ st.text("Medical page")
 userID = st.text_input('PatientID', None)
 
 if st.button('Summary'):
-    response = post("summary", {"userId": userID})
+    try:
+        response = post("summary", {"userId": userID})
+        # Create a dataframe for the history
+        df = pd.DataFrame(response['history'])
+        df_summary= df[['date', 'developmentSummary']]
+        df_summary.loc[:, 'date'] = df_summary['date'].map(lambda x : datetime.datetime.utcfromtimestamp(x))
 
-    # Create a dataframe for the history
-    df = pd.DataFrame(response['history'])
-    df_summary= df[['date', 'developmentSummary']]
-    df_summary.loc[:, 'date'] = df_summary['date'].map(lambda x : datetime.datetime.utcfromtimestamp(x))
+        # Display the table
+        st.table(df_summary)
+    except:
+        st.write("User does not exist")
 
-    # Display the table
-    st.table(df_summary)
+    
