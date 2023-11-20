@@ -23,10 +23,10 @@ server_url = "http://127.0.0.1:8080"
 
 # Button
 # ------------------- Hung implementation ------------------
-# Just for demo how we use the summary API
-if st.button('Summary'):
-   response = post("summary", {"userId": 0})
-   st.write(json.dumps(response, indent=2))
+# # Just for demo how we use the summary API
+# if st.button('Summary'):
+#    response = post("summary", {"userId": 0})
+#    st.write(json.dumps(response, indent=2))
 
 #building out chat history
 if "messages" not in st.session_state:
