@@ -34,7 +34,10 @@ if "messages" not in st.session_state:
 
 #Initialise the chat session in the server and get the display message
 message = st.chat_message("assistant")
-message.write(post("welcome", {"userId": 0})["msg"])
+try:
+    message.write(post("welcome", {"userId": 0})["msg"])
+except:
+    message.write("Apologies we seem to be having internal issues, We are trying to fix this currently. Thank you for you patience")
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
