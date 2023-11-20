@@ -67,11 +67,13 @@ The Voice UI server provides a conversation interface for non-technical users, e
 
 ## Cloud vendor (GCP) deployment and run the system
 
+***TO BE COMPLETED, IF REQUIRED, AS TIME PERMITS ***
+
+## Build Docker image
+
     cd server
     docker build -f Dockerfile -t aide .
     docker run --rm aide
-
-***TO BE COMPLETED, IF REQUIRED, AS TIME PERMITS ***
 
 ## To do list
 
