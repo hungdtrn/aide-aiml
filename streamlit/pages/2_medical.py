@@ -4,6 +4,7 @@ import requests
 import json
 import pandas as pd
 import datetime
+import streamlit_scrollable_textbox as stx
 
 st.title("AIDE")
 st.text("Medical page")
@@ -34,11 +35,15 @@ userID = st.text_input('PatientID', None)
 
 if st.button('Summary'):
 
-    response = post("summary", {"userId": userID})
+    response = post("retrievesummary", {"userId": userID})
 
     df = pd.DataFrame(response['history']) # Create a dataframe for the history
-    df_summary= df[['date', 'developmentSummary']].tail(5) # Take the last 5 entries
-    df_summary.loc[:, 'date'] = df_summary.loc[:, 'date'] = df_summary['date'].map(lambda x : str(pd.to_datetime(datetime.datetime.utcfromtimestamp(x)).date()))# Convert to date time # Convert to date time
+    df_summary= df[['date', 'developmentSummary']].tail(5).fillna("No information") # Take the last 5 entries, and fill NaN
+    df_summary.loc[:, 'date'] = df_summary.loc[:, 'date'] = df_summary['date'].map(\
+                                    lambda x : str(pd.to_datetime(datetime.datetime.utcfromtimestamp(x)).date())\
+                                        )# Convert to date time
+
+
 
     tab1, tab2, tab3, tab4, tab5 = st.tabs(df_summary['date'].to_list()) # Pass in the datetimes as tab headers
 
@@ -48,4 +53,4 @@ if st.button('Summary'):
     for i in range(len(tab_list)):
         with tab_list[i]:
             st.header(df_summary['date'].iloc[i])
-            st.text(df_summary['developmentSummary'].iloc[i])
+            stx.scrollableTextbox(text = df_summary['developmentSummary'].iloc[i], border= True, key = i)

@@ -42,7 +42,7 @@ def welcome():
     return {
         "msg": session.welcome()
     }
-    
+
 @app.route("/chat", methods=['POST'])
 def chat():
     """ Chat with ChatGPT
@@ -72,7 +72,7 @@ def chat_stream():
 @app.route("/summary", methods=['POST'])
 def summary():
     """ Get the summary of the chat history, and save that to the storage
-    """ 
+    """
     userId = request.json["userId"]
     session = get_session_or_create(userId)
     history = session.summary()
@@ -81,5 +81,15 @@ def summary():
         "history": history
     }
 
+@app.route("/retrievesummary", methods=['POST'])
+def retrieve_summary():
+    """ Retrieve summary of the chat history from storage. JSON must be existing
+    """
+    userId = request.json["userId"]
+    session = get_session_or_create(userId)
+    history = session.history
+    return {
+        "history": history
+    }
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug="True", port=8080)
