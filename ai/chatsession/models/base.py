@@ -53,9 +53,10 @@ class StreamingGeneratorCallbackHandler(BaseCallbackHandler):
 
 
 class BaseModel:
+    human_prefix = ""
+    ai_prefix = ""
     def __init__(self, history) -> None:
         load_dotenv()
-
         self.n_old_msgs = 0
         self.history = history
         
@@ -64,14 +65,15 @@ class BaseModel:
         else:
             self.memory = ConversationBufferMemory()
 
-        self.human_prefix = "Human"
-        self.ai_prefix = "AI"
 
     def _loadHistoryToMemory(self, history):
         out = []
         for sessions in history:
             for chat in sessions["conversation"]:
                 for k, v in chat.items():
+                    if k != self.ai_prefix and k != self.human_prefix:
+                        continue
+
                     currentDict = {
                         "type": k,
                         "data": {
@@ -81,6 +83,7 @@ class BaseModel:
                     }
                     out.append(currentDict)
         self.n_old_msgs = len(out)
+        print(self.n_old_msgs)
         retrieved_messages = messages_from_dict(out)
         retrieved_chat_history = ChatMessageHistory(messages=retrieved_messages)
         return retrieved_chat_history

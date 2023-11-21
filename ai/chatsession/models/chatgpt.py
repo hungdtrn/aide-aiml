@@ -6,6 +6,8 @@ from langchain.chat_models import ChatOpenAI
 from .base import BaseModel
 
 class ChatGPT(BaseModel):
+    human_prefix = "human"
+    ai_prefix = "ai"
     def __init__(self, history) -> None:
         super().__init__(history)
 
@@ -14,5 +16,3 @@ class ChatGPT(BaseModel):
         self.model = ChatOpenAI(temperature=.7, model_name="gpt-3.5-turbo")
         self.summary_model = ChatOpenAI(temperature=.7, model_name="gpt-3.5-turbo") 
 
-        self.human_prefix = "Human"
-        self.ai_prefix = "AI"

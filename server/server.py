@@ -6,17 +6,29 @@ import json
 from flask import Flask, jsonify, request, render_template, Response
 
 import storage
+import datetime
 from ai.chatsession import ChatSession
+from ai import VERSION
 
 app = Flask(__name__)
 sessionDict = {}
+
+def _get_today():
+    return datetime.datetime.now().strftime("%Y-%m-%d")
+
+def _get_now():
+    return datetime.datetime.now().isoformat()
 
 def get_session_or_create(userId):
     if userId in sessionDict:
         return sessionDict[userId]
     else:
-        history = storage.readHistory(userId)
-        sessionDict[userId] = ChatSession(history=history)
+        conversations = storage.readConversation(userId)
+        carerInput = storage.readCarerInput(userId)
+        medicalInput = storage.readMedicalInput(userId)
+        sessionDict[userId] = ChatSession(conversations=conversations,
+                                          carerInput=carerInput,
+                                          medicalInput=medicalInput)
         return sessionDict[userId]
 
 @app.route('/')
@@ -27,7 +39,7 @@ def test():
 def createUser():
     userId = request.json["userId"]
     storage.writeUser(userId, request.json)
-    storage.writeHistory(userId, [])
+    
     sessionDict[userId] = {
         "history": [],
     }
@@ -48,10 +60,35 @@ def chat():
     """ Chat with ChatGPT
     """
     userId = request.json["userId"]
-    message = request.json["message"]
+    conversations = storage.readConversation(userId)
     session = get_session_or_create(userId)
+
+    if not conversations or conversations[-1]["date"] != _get_today():
+        conversations.append({
+            "date": _get_today(),
+            "conversation": [],
+            "version": VERSION,
+            "tokeCnt": 0,
+        })
+
+    message = request.json["message"]
+    conversations[-1]["conversation"].append({
+        "time": _get_now(),
+        session.human_prefix: message,
+        "tokenCnt": 0,
+    })
+
+    response = session.chat(message)
+    conversations[-1]["conversation"].append({
+        "time": _get_now(),
+        session.ai_prefix: response,
+        "tokenCnt": 0,
+    })
+
+    storage.writeConversation(userId, conversations)
+
     return {
-        "msg": session.chat(message)
+        "response": response
     }
 
 @app.route("/chat_stream", methods=['POST'])
@@ -69,27 +106,80 @@ def chat_stream():
     response = app.response_class(generate(), mimetype='text/text')
     return response
 
-@app.route("/summary", methods=['POST'])
-def summary():
-    """ Get the summary of the chat history, and save that to the storage
-    """
+@app.route("/dailySummary", methods=['GET'])
+def getDailySummary():
     userId = request.json["userId"]
-    session = get_session_or_create(userId)
-    history = session.summary()
-    storage.writeHistory(userId, history)
+    dailySummary = storage.readDailySummary(userId)
+    num_summary = request.json["n"]
+    if not dailySummary or dailySummary[-1]["date"] != _get_today():
+        session = get_session_or_create(userId)
+        currentDailySummary = session.dailySummary()
+        dailySummary.append(currentDailySummary)
+        storage.writeDailySummary(userId, dailySummary)
+        
+    currentDailySummary = dailySummary[-num_summary:]
     return {
-        "history": history
+        "response": currentDailySummary
     }
 
-@app.route("/retrievesummary", methods=['POST'])
-def retrieve_summary():
-    """ Retrieve summary of the chat history from storage. JSON must be existing
-    """
+
+@app.route("/developmentSummary", methods=['GET'])
+def getDevelopmentSummary():
     userId = request.json["userId"]
-    session = get_session_or_create(userId)
-    history = session.history
+    developmentSummary = storage.readDevelopmentSummary(userId)
+    num_summary = request.json["n"]
+    if not developmentSummary or developmentSummary[-1]["date"] != _get_today():
+        session = get_session_or_create(userId)
+        currentDevelopmentSummary = session.developmentSummary()
+        developmentSummary.append(currentDevelopmentSummary)
+        storage.writeDevelopmentSummary(userId, developmentSummary)
+        
+    currentDevelopmentSummary = developmentSummary[-num_summary:]
     return {
-        "history": history
+        "response": currentDevelopmentSummary
     }
+
+@app.route("/healthRecord", methods=['GET'])
+def getHealthRecord():
+    userId = request.json["userId"]
+    healthRecord = storage.readHealthRecord(userId)
+    num_record = request.json["n"]
+    if not healthRecord or healthRecord[-1]["date"] != _get_today():
+        session = get_session_or_create(userId)
+        currentHealthRecord = session.healthRecord()
+        healthRecord.append(currentHealthRecord)
+        storage.writeHealthRecord(userId, healthRecord)
+    
+    currentHealthRecord = healthRecord[-num_record:]
+    return {
+        "response": currentHealthRecord
+    }
+
+@app.route("/medicalInput", methods=['GET'])
+def getMedicalInput():
+    userId = request.json["userId"]
+    medicalInput = storage.readMedicalInput(userId)    
+    currentMedicalInput = medicalInput[-1]
+    return {
+        "response": currentMedicalInput
+    }
+
+@app.route("/carerInput", methods=['GET'])
+def getCarerInput():
+    userId = request.json["userId"]
+    carerInput = storage.readCarerInput(userId)    
+    currentCarerInput = carerInput[-1]
+    return {
+        "response": currentCarerInput
+    }
+
+@app.route("/medicalInput", methods=['POST'])
+def updateMedicalInput():
+    pass
+
+@app.route("/carerInput", methods=['POST'])
+def updateCarerInput():
+    pass
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug="True", port=8080)

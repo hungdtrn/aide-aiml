@@ -1,13 +1,17 @@
 from .models import build_chat_model
 
 class ChatSession:
-    def __init__(self, history=None, model_type="chatgpt") -> None:
+    def __init__(self, conversations=None, 
+                 carerInput=None, medicalInput=None,
+                 model_type="chatgpt") -> None:
 
-        self.history = history
-        self.chatModel = build_chat_model(model_type, history)
+        self.conversations = conversations
+        self.chatModel = build_chat_model(model_type, conversations)
+        self.human_prefix = self.chatModel.human_prefix
+        self.ai_prefix = self.chatModel.ai_prefix
 
     def welcome(self):
-        if self.history:
+        if self.conversations:
             msg = "Welcome back!"
         else:
             msg = "Hi! Please tell me about your day, or tell me how you are feeling "
