@@ -37,7 +37,7 @@ message = st.chat_message("assistant")
 try:
     message.write(get("welcome", {"userId": 0})["response"])
 except:
-    message.write("Apologies we seem to be having internal issues, We are trying to fix this currently. Thank you for you patience")
+    message.write("Apologies we seem to be having internal issues, We are trying to fix this currently. Thank you for your patience")
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
