@@ -1,22 +1,37 @@
 import json
 import os
 import datetime
+from google.cloud import storage
 
+# Only use GCS bucket when BUCKET_NAME is defined, otherwise use local storage 
+USE_BUCKET = "BUCKET_NAME" in os.environ
 
 STORAGE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./localStorage")
 DUMMY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./initialData")
 
+def bucket():
+    return storage.Client().bucket(os.environ.get('BUCKET_NAME'))
+
+def blob(blob_name):
+    return bucket().blob(blob_name)
+
 def upload(blob_name, content):
     """  Add ${content} to the file wih the path ${blob_name}
     """
-    with open(os.path.join(STORAGE_PATH, blob_name), "w") as f:
-        json.dump(json.loads(content), f)
+    if USE_BUCKET:
+        blob(blob_name).upload_from_string(content)
+    else:
+        with open(os.path.join(STORAGE_PATH, blob_name), "w") as f:
+            json.dump(json.loads(content), f)
 
 def download(destination_blob_name):
     """ Load the content of a file with the path destination_blob_name
     """
-    with open(os.path.join(STORAGE_PATH, destination_blob_name), "r") as f:
-        return json.load(f)
+    if USE_BUCKET:
+        return json.load(blob(destination_blob_name).download_as_string().decode("utf-8"))
+    else:
+        with open(os.path.join(STORAGE_PATH, destination_blob_name), "r") as f:
+            return json.load(f)
 
 def writeUser(userId, user):    
     upload(f"user/{userId}.json", json.dumps(user, indent=2))
@@ -80,4 +95,3 @@ def readCarerInput(userId):
 # #     Read JSON containing indicator scores
 # #     """
 # #     return download(f"indicators/{userId}.json")
-
