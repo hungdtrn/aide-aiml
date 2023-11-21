@@ -4,7 +4,7 @@ import datetime
 
 
 STORAGE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./localStorage")
-DUMMY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./dummyData")
+DUMMY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./initialData")
 
 def upload(blob_name, content):
     """  Add ${content} to the file wih the path ${blob_name}
