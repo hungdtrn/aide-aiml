@@ -83,7 +83,7 @@ class BaseModel:
                     }
                     out.append(currentDict)
         self.n_old_msgs = len(out)
-        print(self.n_old_msgs)
+
         retrieved_messages = messages_from_dict(out)
         retrieved_chat_history = ChatMessageHistory(messages=retrieved_messages)
         return retrieved_chat_history

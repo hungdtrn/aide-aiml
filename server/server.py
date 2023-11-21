@@ -114,14 +114,8 @@ def chat_stream():
     """
     userId = request.json["userId"]
     session = get_session_or_create(userId)
-
     message = request.json["message"]
-    conversations[-1]["conversation"].append({
-        "time": _get_now(),
-        session.human_prefix: message,
-        "tokenCnt": 0,
-    })
-    response_gen = session.chat(message, streaming=True)
+
     conversations = storage.readConversation(userId)
     if not conversations or conversations[-1]["date"] != _get_today():
         conversations.append({
@@ -131,10 +125,17 @@ def chat_stream():
             "tokeCnt": 0,
         })
 
+    conversations[-1]["conversation"].append({
+        "time": _get_now(),
+        session.human_prefix: message,
+        "tokenCnt": 0,
+    })
+
+    response_gen = session.chat(message, streaming=True)
     def generate():
         msg = ""
         for word in response_gen:
-            msg += word + " "
+            msg += word
             yield word
         msg.strip()
         conversations[-1]["conversation"].append({
@@ -143,6 +144,7 @@ def chat_stream():
             "tokenCnt": 0,
         })
         storage.writeConversation(userId, conversations)
+        yield ""
 
     response = app.response_class(generate(), mimetype='text/text')
     return response
@@ -223,4 +225,13 @@ def updateCarerInput():
     pass
 
 if __name__ == "__main__":
+    "Create dummy data"
+    import shutil
+    if not os.path.exists(storage.STORAGE_PATH):
+        os.mkdir(storage.STORAGE_PATH)
+    for folderName in os.listdir(storage.DUMMY_PATH):
+        if not os.path.exists(os.path.join(storage.STORAGE_PATH, folderName)):
+            shutil.copytree(os.path.join(storage.DUMMY_PATH, folderName), os.path.join(storage.STORAGE_PATH, folderName))
+    
+
     app.run(host='0.0.0.0', debug="True", port=8080)
