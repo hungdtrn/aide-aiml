@@ -35,7 +35,7 @@ userID = st.text_input('PatientID', None)
 #     except:
 #         st.write("User does not exist")
 
-if st.button('Summary'):
+if st.checkbox('View daily Summary'):
 
     response = post("retrievesummary", {"userId": userID})
 
@@ -57,31 +57,69 @@ if st.button('Summary'):
             st.header(df_summary['date'].iloc[i])
             stx.scrollableTextbox(text = df_summary['developmentSummary'].iloc[i], border= True, key = i)
 
-st.header("Indicator Trends")
+
+if st.checkbox('View Indicator Trends'):
+    #--- Indicator trends---#
+    st.header("Indicator Trends")
 
 
-# Create mock dates
-dates = []
-for i in range(5):
-  datetime_str = f'2{i}/11/23'
-  dates.append(datetime.datetime.strptime(datetime_str, '%d/%m/%y'))
+    # Create mock dates
+    dates = []
+    for i in range(5):
+        datetime_str = f'2{i}/11/23'
+        dates.append(datetime.datetime.strptime(datetime_str, '%d/%m/%y'))
 
-# Create mock indicator data
-df_indicators = pd.DataFrame()
-df_indicators['date'] = dates
-df_indicators['mentalHealth'] = [5,4,5,3,4]
-df_indicators['socialHealth'] = [3, 3, 4, 5,5]
-df_indicators['physicalHealth'] = [3,4,5,5,4]
-date = df_indicators['date']
-values = df_indicators[['mentalHealth','socialHealth','physicalHealth']]
+    # Create mock indicator data
+    df_indicators = pd.DataFrame()
+    df_indicators['date'] = dates
+    df_indicators['mentalHealth'] = [5,4,5,3,4]
+    df_indicators['socialHealth'] = [3, 3, 4, 5,5]
+    df_indicators['physicalHealth'] = [3,4,5,5,4]
+    date = df_indicators['date']
+    values = df_indicators[['mentalHealth','socialHealth','physicalHealth']]
 
-# Create plot
-fig, ax = plt.subplots(figsize=(8, 6))
-ax.plot(df_indicators['date'], df_indicators['mentalHealth'], label = 'Mental Health')
-ax.plot(df_indicators['date'], df_indicators['socialHealth'], label = 'Social Health')
-ax.plot(df_indicators['date'], df_indicators['physicalHealth'], label = 'Physical Health')
-ax.set_xlabel('Date')
-ax.legend()
+    # Create radio buttons for graph
+    indicator = st.radio(
+        "Please select an indicator to view trend",
+        ["Mental health", "Social health", "Physical health", "All"])
 
-# Display plot
-st.pyplot(fig)
+    if indicator == 'Mental health':
+        fig, ax = plt.subplots(figsize=(8, 6))
+        ax.plot(df_indicators['date'], df_indicators['mentalHealth'], label = 'Mental Health', color = 'blue' )
+        ax.set_ylim(0,5.5)
+        ax.set_xlabel('Date')
+        ax.legend()
+        # Display plot
+        st.pyplot(fig)
+
+    elif indicator == 'Social health':
+        fig, ax = plt.subplots(figsize=(8, 6))
+        ax.plot(df_indicators['date'], df_indicators['socialHealth'], label = 'Social Health', color = 'green')
+        ax.set_ylim(0,5.5)
+        ax.set_xlabel('Date')
+        ax.legend()
+
+        # Display plot
+        st.pyplot(fig)
+
+    elif indicator == 'Physical health':
+        fig, ax = plt.subplots(figsize=(8, 6))
+        ax.plot(df_indicators['date'], df_indicators['physicalHealth'], label = 'Physical Health', color = 'orange')
+        ax.set_ylim(0,5.5)
+        ax.set_xlabel('Date')
+        ax.legend()
+
+        # Display plot
+        st.pyplot(fig)
+
+    else:
+        fig, ax = plt.subplots(figsize=(8, 6))
+        ax.plot(df_indicators['date'], df_indicators['mentalHealth'], label = 'Mental Health', color = 'blue' )
+        ax.plot(df_indicators['date'], df_indicators['socialHealth'], label = 'Social Health', color = 'green')
+        ax.plot(df_indicators['date'], df_indicators['physicalHealth'], label = 'Physical Health', color = 'orange')
+        ax.set_xlabel('Date')
+        ax.set_ylim(0,5.5)
+        ax.legend()
+
+        # Display plot
+        st.pyplot(fig)
