@@ -3,7 +3,7 @@ import os
 import datetime
 from google.cloud import storage
 
-# Only use GCS bucket when BUCKET_NAME is defined, otherwise use local storage 
+# Only use GCS bucket when BUCKET_NAME is defined, otherwise use local storage
 USE_BUCKET = "BUCKET_NAME" in os.environ
 
 STORAGE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./localStorage")
@@ -29,14 +29,15 @@ def download(destination_blob_name):
     """
     if USE_BUCKET:
         return blob(destination_blob_name).download_as_string().decode("utf-8")
+        # Need to put in some code here to account for missing .json. What should the behaviour be?
     else:
         with open(os.path.join(STORAGE_PATH, destination_blob_name), "r") as f:
             return json.load(f)
 
-def writeUser(userId, user):    
+def writeUser(userId, user):
     upload(f"user/{userId}.json", json.dumps(user, indent=2))
     writeConversation(userId, [])
-    writeDailySummary(userId, [])   
+    writeDailySummary(userId, [])
     writeDevSummary(userId, [])
     writeindicator(userId, [])
     writeMedicalInput(userId, [])

@@ -6,23 +6,25 @@
             "type": "python",
             "flask": true,
             "request": "launch",
-            "cwd": "~/git/aide-aiml/server",
+            // "cwd": "/Users/joe/code/aide-aiml/server",
+            "cwd": "${cwd}server",
             "program": "server.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "env": {
-                "PROJECT": "shane-np"
+                "PROJECT": "aide-aiml"
             }
         },
         {
             "name": "Python: function",
             "type": "python",
             "request": "launch",
-            "program": "~/git/aide-aiml/notification/main.py",
+            // "program": "/Users/joe/code/aide-aiml/notification/main.py",
+            "program": "${cwd}notification/main.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "env": {
-                "PROJECT": "shane-np"
+                "PROJECT": "aide-aiml"
             }
         }
     ]

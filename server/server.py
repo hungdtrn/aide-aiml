@@ -40,13 +40,13 @@ def test():
 def createUser():
     userId = request.json["userId"]
     storage.writeUser(userId, request.json)
-    
+
     sessionDict[userId] = {
         "history": [],
     }
     return json.dumps({"userId": request.json["userId"]})
 
-@app.route("/welcome", methods=['GET'])
+@app.route("/welcome", methods=['POST'])
 def welcome():
     """ Get the welcome message from the server
     """
@@ -173,7 +173,7 @@ def getDailySummary():
                 "aiVersion": VERSION,
             })
             storage.writeDailySummary(userId, dailySummary)
-        
+
     return {
         "response": dailySummary[-num_summary:]
     }
@@ -193,7 +193,7 @@ def getdevSummary():
             pass
         else:
             session = _get_session_or_create(userId)
-            
+
 
             # Get past summary
             pastSumm = ""
@@ -210,7 +210,7 @@ def getdevSummary():
                 "aiVersion": VERSION,
             })
             storage.writeDevSummary(userId, devSummary)
-    
+
     return {
         "response": devSummary[-num_summary:]
     }
@@ -228,7 +228,7 @@ def getIndicator():
     #     currentindicator = session.indicator()
     #     indicator.append(currentindicator)
     #     storage.writeindicator(userId, indicator)
-    
+
     currentindicator = indicator[-num_record:]
     return {
         "response": currentindicator
@@ -237,7 +237,7 @@ def getIndicator():
 @app.route("/medicalInput", methods=['GET'])
 def getMedicalInput():
     userId = request.json["userId"]
-    medicalInput = storage.readMedicalInput(userId)    
+    medicalInput = storage.readMedicalInput(userId)
     currentMedicalInput = medicalInput[-1]
     return {
         "response": currentMedicalInput
@@ -246,7 +246,7 @@ def getMedicalInput():
 @app.route("/carerInput", methods=['GET'])
 def getCarerInput():
     userId = request.json["userId"]
-    carerInput = storage.readCarerInput(userId)    
+    carerInput = storage.readCarerInput(userId)
     currentCarerInput = carerInput[-1]
     return {
         "response": currentCarerInput
@@ -272,6 +272,6 @@ if __name__ == "__main__":
     for folderName in os.listdir(storage.DUMMY_PATH):
         if not os.path.exists(os.path.join(storage.STORAGE_PATH, folderName)):
             shutil.copytree(os.path.join(storage.DUMMY_PATH, folderName), os.path.join(storage.STORAGE_PATH, folderName))
-    
+
 
     app.run(host='0.0.0.0', debug="True", port=8080)
