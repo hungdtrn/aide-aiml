@@ -19,7 +19,7 @@ def _get_today():
 def _get_now():
     return datetime.datetime.now().isoformat()
 
-def get_session_or_create(userId):
+def _get_session_or_create(userId):
     if userId in sessionDict:
         return sessionDict[userId]
     else:
@@ -30,6 +30,7 @@ def get_session_or_create(userId):
                                           carerInput=carerInput,
                                           medicalInput=medicalInput)
         return sessionDict[userId]
+
 
 @app.route('/')
 def test():
@@ -50,7 +51,7 @@ def welcome():
     """ Get the welcome message from the server
     """
     userId = request.json["userId"]
-    session = get_session_or_create(userId)
+    session = _get_session_or_create(userId)
     conversations = storage.readConversation(userId)
     if not conversations or conversations[-1]["date"] != _get_today():
         conversations.append({
@@ -77,7 +78,7 @@ def chat():
     """ Chat with ChatGPT
     """
     userId = request.json["userId"]
-    session = get_session_or_create(userId)
+    session = _get_session_or_create(userId)
 
     conversations = storage.readConversation(userId)
     if not conversations or conversations[-1]["date"] != _get_today():
@@ -113,7 +114,7 @@ def chat_stream():
     """ Chat with ChatGPT, but streaming tokens
     """
     userId = request.json["userId"]
-    session = get_session_or_create(userId)
+    session = _get_session_or_create(userId)
     message = request.json["message"]
 
     conversations = storage.readConversation(userId)
@@ -163,7 +164,7 @@ def getDailySummary():
             # Skip the summary if we don't have any conversation data for today!
             pass
         else:
-            session = get_session_or_create(userId)
+            session = _get_session_or_create(userId)
             currentDailySummary = session.dailySummary(conversations[-1]["conversation"])
             dailySummary.append({
                 "date": _get_today(),
@@ -191,7 +192,7 @@ def getdevSummary():
             # Skip the summary if we don't have any conversation data for today!
             pass
         else:
-            session = get_session_or_create(userId)
+            session = _get_session_or_create(userId)
             
 
             # Get past summary
@@ -220,7 +221,7 @@ def getHealthRecord():
     healthRecord = storage.readHealthRecord(userId)
     num_record = request.json["n"]
     if not healthRecord or healthRecord[-1]["date"] != _get_today():
-        session = get_session_or_create(userId)
+        session = _get_session_or_create(userId)
         currentHealthRecord = session.healthRecord()
         healthRecord.append(currentHealthRecord)
         storage.writeHealthRecord(userId, healthRecord)
@@ -254,6 +255,10 @@ def updateMedicalInput():
 
 @app.route("/carerInput", methods=['POST'])
 def updateCarerInput():
+    pass
+
+def preriodicSaveSummary():
+    "TODO: Periodically get the daily, the development summary and save it to the server at the end of each day"
     pass
 
 if __name__ == "__main__":
