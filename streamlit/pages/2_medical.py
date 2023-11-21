@@ -1,5 +1,5 @@
 import streamlit as st
-from utils import post
+from utils import post, get
 import requests
 import json
 import pandas as pd
@@ -37,25 +37,29 @@ userID = st.text_input('PatientID', None)
 
 if st.checkbox('View daily Summary'):
 
-    response = post("retrievesummary", {"userId": userID})
+    # response = post("retrievesummary", {"userId": userID})
+    response = get("dailySummary", {"userId": userID,
+                                    "n" : 5})
+    st.text(response)
 
-    df = pd.DataFrame(response['history']) # Create a dataframe for the history
-    df_summary= df[['date', 'developmentSummary']].tail(5).fillna("No information") # Take the last 5 entries, and fill NaN
-    df_summary.loc[:, 'date'] = df_summary.loc[:, 'date'] = df_summary['date'].map(\
-                                    lambda x : str(pd.to_datetime(datetime.datetime.utcfromtimestamp(x)).date())\
-                                        )# Convert to date time
+    ##--Randall to do--##
+    # df = pd.DataFrame(response['history']) # Create a dataframe for the history
+    # df_summary= df[['date', 'developmentSummary']].tail(5).fillna("No information") # Take the last 5 entries, and fill NaN
+    # df_summary.loc[:, 'date'] = df_summary.loc[:, 'date'] = df_summary['date'].map(\
+    #                                 lambda x : str(pd.to_datetime(datetime.datetime.utcfromtimestamp(x)).date())\
+    #                                     )# Convert to date time
+    ##------###
 
 
+    # tab1, tab2, tab3, tab4, tab5 = st.tabs(df_summary['date'].to_list()) # Pass in the datetimes as tab headers
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(df_summary['date'].to_list()) # Pass in the datetimes as tab headers
+    # tab_list = [tab1, tab2, tab3, tab4, tab5] # create a tab list
 
-    tab_list = [tab1, tab2, tab3, tab4, tab5] # create a tab list
-
-    # Populate the tabs
-    for i in range(len(tab_list)):
-        with tab_list[i]:
-            st.header(df_summary['date'].iloc[i])
-            stx.scrollableTextbox(text = df_summary['developmentSummary'].iloc[i], border= True, key = i)
+    # # Populate the tabs
+    # for i in range(len(tab_list)):
+    #     with tab_list[i]:
+    #         st.header(df_summary['date'].iloc[i])
+    #         stx.scrollableTextbox(text = df_summary['developmentSummary'].iloc[i], border= True, key = i)
 
 
 if st.checkbox('View Indicator Trends'):
