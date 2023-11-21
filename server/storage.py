@@ -28,7 +28,7 @@ def download(destination_blob_name):
     """ Load the content of a file with the path destination_blob_name
     """
     if USE_BUCKET:
-        return json.load(blob(destination_blob_name).download_as_string().decode("utf-8"))
+        return blob(destination_blob_name).download_as_string().decode("utf-8")
     else:
         with open(os.path.join(STORAGE_PATH, destination_blob_name), "r") as f:
             return json.load(f)
@@ -95,3 +95,6 @@ def readCarerInput(userId):
 # #     Read JSON containing indicator scores
 # #     """
 # #     return download(f"indicators/{userId}.json")
+
+if __name__ == "__main__":
+    readUser("-1")
