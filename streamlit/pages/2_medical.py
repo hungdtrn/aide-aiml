@@ -5,9 +5,11 @@ import json
 import pandas as pd
 import datetime
 import streamlit_scrollable_textbox as stx
+import matplotlib.pyplot as plt
 
 st.title("AIDE")
 st.text("Medical page")
+st.header("Medical summary")
 
 
 # Just for demo how we use the summary API
@@ -54,3 +56,32 @@ if st.button('Summary'):
         with tab_list[i]:
             st.header(df_summary['date'].iloc[i])
             stx.scrollableTextbox(text = df_summary['developmentSummary'].iloc[i], border= True, key = i)
+
+st.header("Indicator Trends")
+
+
+# Create mock dates
+dates = []
+for i in range(5):
+  datetime_str = f'2{i}/11/23'
+  dates.append(datetime.datetime.strptime(datetime_str, '%d/%m/%y'))
+
+# Create mock indicator data
+df_indicators = pd.DataFrame()
+df_indicators['date'] = dates
+df_indicators['mentalHealth'] = [5,4,5,3,4]
+df_indicators['socialHealth'] = [3, 3, 4, 5,5]
+df_indicators['physicalHealth'] = [3,4,5,5,4]
+date = df_indicators['date']
+values = df_indicators[['mentalHealth','socialHealth','physicalHealth']]
+
+# Create plot
+fig, ax = plt.subplots(figsize=(8, 6))
+ax.plot(df_indicators['date'], df_indicators['mentalHealth'], label = 'Mental Health')
+ax.plot(df_indicators['date'], df_indicators['socialHealth'], label = 'Social Health')
+ax.plot(df_indicators['date'], df_indicators['physicalHealth'], label = 'Physical Health')
+ax.set_xlabel('Date')
+ax.legend()
+
+# Display plot
+st.pyplot(fig)
