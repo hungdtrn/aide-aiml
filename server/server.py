@@ -151,35 +151,67 @@ def chat_stream():
 
 @app.route("/dailySummary", methods=['GET'])
 def getDailySummary():
+    """ Get the summary of today and the past n-1 days
+    """
     userId = request.json["userId"]
     dailySummary = storage.readDailySummary(userId)
     num_summary = request.json["n"]
     if not dailySummary or dailySummary[-1]["date"] != _get_today():
-        session = get_session_or_create(userId)
-        currentDailySummary = session.dailySummary()
-        dailySummary.append(currentDailySummary)
-        storage.writeDailySummary(userId, dailySummary)
+        # Get today's conversation
+        conversations = storage.readConversation(userId)
+        if not conversations or conversations[-1]["date"] != _get_today():
+            # Skip the summary if we don't have any conversation data for today!
+            pass
+        else:
+            session = get_session_or_create(userId)
+            currentDailySummary = session.dailySummary(conversations[-1]["conversation"])
+            dailySummary.append({
+                "date": _get_today(),
+                "summary": currentDailySummary,
+                "tokenCnt": 0,
+                "aiVersion": VERSION,
+            })
+            storage.writeDailySummary(userId, dailySummary)
         
-    currentDailySummary = dailySummary[-num_summary:]
     return {
-        "response": currentDailySummary
+        "response": dailySummary[-num_summary:]
     }
 
 
-@app.route("/developmentSummary", methods=['GET'])
-def getDevelopmentSummary():
+@app.route("/devSummary", methods=['GET'])
+def getdevSummary():
     userId = request.json["userId"]
-    developmentSummary = storage.readDevelopmentSummary(userId)
+    devSummary = storage.readDevSummary(userId)
     num_summary = request.json["n"]
-    if not developmentSummary or developmentSummary[-1]["date"] != _get_today():
-        session = get_session_or_create(userId)
-        currentDevelopmentSummary = session.developmentSummary()
-        developmentSummary.append(currentDevelopmentSummary)
-        storage.writeDevelopmentSummary(userId, developmentSummary)
-        
-    currentDevelopmentSummary = developmentSummary[-num_summary:]
+    if not devSummary or devSummary[-1]["date"] != _get_today():
+        # Get today's conversation
+        conversations = storage.readConversation(userId)
+        currentConv = conversations[-1]["conversation"]
+        if not conversations or conversations[-1]["date"] != _get_today():
+            # Skip the summary if we don't have any conversation data for today!
+            pass
+        else:
+            session = get_session_or_create(userId)
+            
+
+            # Get past summary
+            pastSumm = ""
+            if devSummary:
+                pastSumm = devSummary[-1]["summary"]
+
+            # Update the development summary
+            currentdevSummary = session.devSummary(pastSumm, currentConv)
+
+            devSummary.append({
+                "date": _get_today(),
+                "summary": currentdevSummary,
+                "tokenCnt": 0,
+                "aiVersion": VERSION,
+            })
+            storage.writeDevSummary(userId, devSummary)
+    
     return {
-        "response": currentDevelopmentSummary
+        "response": devSummary[-num_summary:]
     }
 
 @app.route("/healthRecord", methods=['GET'])

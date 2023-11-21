@@ -8,8 +8,8 @@ from .base import BaseModel
 class ChatGPT(BaseModel):
     human_prefix = "human"
     ai_prefix = "ai"
-    def __init__(self, history) -> None:
-        super().__init__(history)
+    def __init__(self, history, carerInput, medicalInput) -> None:
+        super().__init__(history, carerInput, medicalInput)
 
         api_key = os.getenv("OPENAI_API_KEY")
         openai.api_key = api_key    

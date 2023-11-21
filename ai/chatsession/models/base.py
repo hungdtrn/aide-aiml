@@ -55,13 +55,12 @@ class StreamingGeneratorCallbackHandler(BaseCallbackHandler):
 class BaseModel:
     human_prefix = ""
     ai_prefix = ""
-    def __init__(self, history) -> None:
+    model = None
+    def __init__(self, history, carerInput, medicalInput) -> None:
         load_dotenv()
-        self.n_old_msgs = 0
-        self.history = history
         
-        if self.history:
-            self.memory = ConversationBufferMemory(chat_memory=self._loadHistoryToMemory(self.history))
+        if history:
+            self.memory = ConversationBufferMemory(chat_memory=self._loadHistoryToMemory(history))
         else:
             self.memory = ConversationBufferMemory()
 
@@ -101,88 +100,47 @@ class BaseModel:
             memory=self.memory
         )
         return chain(message)
-
-    def _update_history(self):
-        messages = self.memory.chat_memory.messages
-        ingest_to_db = messages_to_dict(messages)
-        conversations = []
-        for item in ingest_to_db[self.n_old_msgs:]:
-            conversations.append({
-                item["type"]: item["data"]["content"]
-            })
-        self.history.append({
-            "date": time.time(),
-            "conversation": conversations,
-        })
-        self.n_old_msgs = len(ingest_to_db)
-
-    def _conversation2string(self, converstaion):
-        out = ""
-        for item in converstaion:
-            for k, v in item.items():
-                out += "{}: {}".format(k, v) + "\n"
-        return out    
-
-    def _conversation_summary(self, currentConversation):
+    
+    def _dailySummary(self, currentConversation):
         templates = get_template()
-        conversation_summary_template = templates.format_prompt(templates.CONVERSATION_SUMMARY_TEMPLATE,
+        dailySummary_template = templates.format_prompt(templates.DAILY_SUMMARY_TEMPLATE,
                                                                 human_prefix=self.human_prefix,
                                                                 ai_prefix=self.ai_prefix)
-        conversation_summary_prompt = PromptTemplate(input_variables=["new_lines"],
-                                                     template=conversation_summary_template)
-        conversation_chain = LLMChain(llm=self.model, prompt=conversation_summary_prompt)
+        dailySummary_prompt = PromptTemplate(input_variables=["new_lines"],
+                                                     template=dailySummary_template)
+        conversation_chain = LLMChain(llm=self.model, prompt=dailySummary_prompt)
 
-        conversation_summary = conversation_chain(currentConversation)["text"]
-        return conversation_summary
+        dailySummary = conversation_chain(currentConversation)["text"]
+        return dailySummary
     
-    def _development_summary(self, currentConversation):
+    def _devSummary(self, pastSummary, currentConversation):
         templates = get_template()
         
-        development_summary_template = templates.format_prompt(templates.DEVELOPMENT_SUMMARY_TEMPLATE,
+        devSummary_template = templates.format_prompt(templates.DEVELOPMENT_SUMMARY_TEMPLATE,
                                                                human_prefix=self.human_prefix,
                                                                ai_prefix=self.ai_prefix)
 
         
-        development_summary_prompt = PromptTemplate(template=development_summary_template,
+        devSummary_prompt = PromptTemplate(template=devSummary_template,
                                                     input_variables=["summary", "new_lines"])
 
-        development_chain = LLMChain(llm=self.model, prompt=development_summary_prompt)
-        pastSummary = self.history[-2].get("longtermSummary", "")
-        development_summary = development_chain({"summary": pastSummary, 
-                                                    "new_lines": currentConversation})["text"]
+        development_chain = LLMChain(llm=self.model, prompt=devSummary_prompt)
+        devSummary = development_chain({"summary": pastSummary, 
+                                        "new_lines": currentConversation})["text"]
 
-        return development_summary
+        return devSummary
 
-    def _summary(self):
-        """ Do two things:
-        1. Summary the conversation in the current session - conversationSummary
-        2. Summary the development of the patient's mental state so far - developmentSummary
-        """
-        currentConversation = self.history[-1]["conversation"]
-        currentSummary = self._conversation_summary(currentConversation)
-        if len(self.history) <= 1:
-            developmentSummary = currentSummary
-        else:
-            developmentSummary = self._development_summary(currentConversation)
-
-        return currentSummary, developmentSummary
-
-    def summary(self):
-        # Update the history conversation
-        self._update_history()
-
-        # Summarise the conversation
+    def dailySummary(self, conversation):
         self.model.streaming = False
         self.model.callbacks = []
-        
-        conversation_summary, development_summary = self._summary()
-        self.history[-1]["conversationSummary"] = conversation_summary
-        self.history[-1]["developmentSummary"] = development_summary
-        
-        # messages up to this time are summarized
-        # new messages will be concidered new conversation
+        currentSummary = self._dailySummary(conversation)
+        return currentSummary
 
-        return self.history
+    def devSummary(self, pastSummary, conversation):
+        self.model.streaming = False
+        self.model.callbacks = []
+        devSummary = self._devSummary(pastSummary, conversation)
+        return devSummary
 
     def chat(self, message, streaming):
         if not streaming:

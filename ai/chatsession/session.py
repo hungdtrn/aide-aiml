@@ -6,7 +6,8 @@ class ChatSession:
                  model_type="chatgpt") -> None:
 
         self.conversations = conversations
-        self.chatModel = build_chat_model(model_type, conversations)
+        self.chatModel = build_chat_model(model_type, conversations,
+                                          carerInput, medicalInput)
         self.human_prefix = self.chatModel.human_prefix
         self.ai_prefix = self.chatModel.ai_prefix
 
@@ -21,5 +22,8 @@ class ChatSession:
     def chat(self, message, streaming=False):
         return self.chatModel.chat(message, streaming)
 
-    def summary(self):
-        return self.chatModel.summary()
+    def dailySummary(self, conversation):
+        return self.chatModel.dailySummary(conversation)
+
+    def devSummary(self, pastSummary, conversation):
+        return self.chatModel.devSummary(pastSummary, conversation)

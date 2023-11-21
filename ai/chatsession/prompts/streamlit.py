@@ -14,7 +14,7 @@ Current conversation:
 <human_prefix>: {input}
 <ai_prefix>:"""   
 
-    CONVERSATION_SUMMARY_TEMPLATE =  """This is a conversation between a patient and an AI Therapist. Summarize the patient's emotional state. This summary will be used to assess the patient's mental health.
+    DAILY_SUMMARY_TEMPLATE =  """This is a conversation between a patient and an AI Therapist. Summarize the patient's emotional state. This summary will be used to assess the patient's mental health.
 
 {new_lines}
 """    
