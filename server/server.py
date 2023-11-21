@@ -45,14 +45,31 @@ def createUser():
     }
     return json.dumps({"userId": request.json["userId"]})
 
-@app.route("/welcome", methods=['POST'])
+@app.route("/welcome", methods=['GET'])
 def welcome():
     """ Get the welcome message from the server
     """
     userId = request.json["userId"]
     session = get_session_or_create(userId)
+    conversations = storage.readConversation(userId)
+    if not conversations or conversations[-1]["date"] != _get_today():
+        conversations.append({
+            "date": _get_today(),
+            "conversation": [],
+            "version": VERSION,
+            "tokeCnt": 0,
+        })
+
+    response = session.welcome()
+    conversations[-1]["conversation"].append({
+        "time": _get_now(),
+        session.ai_prefix: response,
+        "tokenCnt": 0,
+    })
+    storage.writeConversation(userId, conversations)
+
     return {
-        "msg": session.welcome()
+        "response": response
     }
 
 @app.route("/chat", methods=['POST'])
@@ -60,9 +77,9 @@ def chat():
     """ Chat with ChatGPT
     """
     userId = request.json["userId"]
-    conversations = storage.readConversation(userId)
     session = get_session_or_create(userId)
 
+    conversations = storage.readConversation(userId)
     if not conversations or conversations[-1]["date"] != _get_today():
         conversations.append({
             "date": _get_today(),
@@ -96,12 +113,36 @@ def chat_stream():
     """ Chat with ChatGPT, but streaming tokens
     """
     userId = request.json["userId"]
-    message = request.json["message"]
     session = get_session_or_create(userId)
+
+    message = request.json["message"]
+    conversations[-1]["conversation"].append({
+        "time": _get_now(),
+        session.human_prefix: message,
+        "tokenCnt": 0,
+    })
     response_gen = session.chat(message, streaming=True)
+    conversations = storage.readConversation(userId)
+    if not conversations or conversations[-1]["date"] != _get_today():
+        conversations.append({
+            "date": _get_today(),
+            "conversation": [],
+            "version": VERSION,
+            "tokeCnt": 0,
+        })
+
     def generate():
+        msg = ""
         for word in response_gen:
+            msg += word + " "
             yield word
+        msg.strip()
+        conversations[-1]["conversation"].append({
+            "time": _get_now(),
+            session.ai_prefix: msg,
+            "tokenCnt": 0,
+        })
+        storage.writeConversation(userId, conversations)
 
     response = app.response_class(generate(), mimetype='text/text')
     return response
