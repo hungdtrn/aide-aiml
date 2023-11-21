@@ -23,7 +23,7 @@ def writeUser(userId, user):
     writeConversation(userId, [])
     writeDailySummary(userId, [])   
     writeDevSummary(userId, [])
-    writeHealthRecord(userId, [])
+    writeindicator(userId, [])
     writeMedicalInput(userId, [])
     writeCarerInput(userId, [])
 
@@ -36,8 +36,8 @@ def writeDailySummary(userId, dailySummary):
 def writeDevSummary(userId, developmentSummary):
     upload(f"developmentSummary/{userId}.json", json.dumps(developmentSummary, indent=2))
 
-def writeHealthRecord(userId, healthRecord):
-    upload(f"healthRecord/{userId}.json", json.dumps(healthRecord, indent=2))
+def writeindicator(userId, indicator):
+    upload(f"indicator/{userId}.json", json.dumps(indicator, indent=2))
 
 def writeMedicalInput(userId, medicalInput):
     upload(f"medicalInput/{userId}.json", json.dumps(medicalInput, indent=2))
@@ -57,8 +57,8 @@ def readDailySummary(userId):
 def readDevSummary(userId):
     return download(f"developmentSummary/{userId}.json")
 
-def readHealthRecord(userId):
-    return download(f"healthRecord/{userId}.json")
+def readIndicator(userId):
+    return download(f"indicator/{userId}.json")
 
 def readMedicalInput(userId):
     return download(f"medicalInput/{userId}.json")

@@ -215,20 +215,23 @@ def getdevSummary():
         "response": devSummary[-num_summary:]
     }
 
-@app.route("/healthRecord", methods=['GET'])
-def getHealthRecord():
+@app.route("/indicator", methods=['GET'])
+def getIndicator():
     userId = request.json["userId"]
-    healthRecord = storage.readHealthRecord(userId)
+    indicator = storage.readIndicator(userId)
     num_record = request.json["n"]
-    if not healthRecord or healthRecord[-1]["date"] != _get_today():
-        session = _get_session_or_create(userId)
-        currentHealthRecord = session.healthRecord()
-        healthRecord.append(currentHealthRecord)
-        storage.writeHealthRecord(userId, healthRecord)
+
+    # TODO: implemenent the session indicato
+
+    # if not indicator or indicator[-1]["date"] != _get_today():
+    #     session = _get_session_or_create(userId)
+    #     currentindicator = session.indicator()
+    #     indicator.append(currentindicator)
+    #     storage.writeindicator(userId, indicator)
     
-    currentHealthRecord = healthRecord[-num_record:]
+    currentindicator = indicator[-num_record:]
     return {
-        "response": currentHealthRecord
+        "response": currentindicator
     }
 
 @app.route("/medicalInput", methods=['GET'])
