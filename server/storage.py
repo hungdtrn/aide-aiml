@@ -95,6 +95,3 @@ def readCarerInput(userId):
 # #     Read JSON containing indicator scores
 # #     """
 # #     return download(f"indicators/{userId}.json")
-
-if __name__ == "__main__":
-    readUser("-1")
