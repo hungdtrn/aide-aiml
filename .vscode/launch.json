@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: server",
+            "type": "python",
+            "flask": true,
+            "request": "launch",
+            "cwd": "~/git/aide-aiml/server",
+            "program": "server.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PROJECT": "shane-np"
+            }
+        },
+        {
+            "name": "Python: function",
+            "type": "python",
+            "request": "launch",
+            "program": "~/git/aide-aiml/notification/main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PROJECT": "shane-np"
+            }
+        }
+    ]
+}
