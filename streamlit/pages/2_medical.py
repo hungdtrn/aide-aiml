@@ -15,6 +15,12 @@ st.header("Medical summary")
 
 # Just for demo how we use the summary API
 userID = st.text_input('PatientID', None)
+checkbox_disabled = True # Disable the checkboxes by default
+if userID:
+    # Need to also put in a check for a valid userID
+    checkbox_disabled= False
+else:
+    st.text("Enter user ID")
 
 # if st.button('Summary'):
 #     try:
@@ -36,7 +42,7 @@ userID = st.text_input('PatientID', None)
 #     except:
 #         st.write("User does not exist")
 
-if st.checkbox('View daily Summary'):
+if st.checkbox('View daily Summary', disabled = checkbox_disabled):
 
     # response = post("dailySummary", {"userId": userID, "n" : 5})
     response = dailySummary(obj =  {"userId": userID, "n" : 5})
@@ -67,7 +73,7 @@ if st.checkbox('View daily Summary'):
             stx.scrollableTextbox(text = df_summary['summary'].iloc[i], border= True, key = i)
 
 
-if st.checkbox('View Indicator Trends'):
+if st.checkbox('View Indicator Trends', disabled = checkbox_disabled):
     #--- Indicator trends---#
     st.header("Indicator Trends")
 
