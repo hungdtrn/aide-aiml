@@ -2,21 +2,11 @@ import streamlit as st
 import requests
 import json
 from utils import post, stream
+from client import welcome
 # Page title
 st.title("AIDE")
 st.text("Patient page")
 
-
-# server_url = "http://127.0.0.1:8080"
-
-
-
-# Button
-# ------------------- Hung implementation ------------------
-# # Just for demo how we use the summary API
-# if st.button('Summary'):
-#    response = post("summary", {"userId": 0})
-#    st.write(json.dumps(response, indent=2))
 
 #building out chat history
 if "messages" not in st.session_state:
@@ -25,7 +15,7 @@ if "messages" not in st.session_state:
 #Initialise the chat session in the server and get the display message
 message = st.chat_message("assistant")
 try:
-    message.write(post("welcome", {"userId": 0})["response"])
+    message.write(welcome(obj = {"userId": 0})["response"])
 except:
     message.write("Apologies we seem to be having internal issues, We are trying to fix this currently. Thank you for your patience")
 
