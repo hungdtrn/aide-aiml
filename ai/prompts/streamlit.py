@@ -8,7 +8,7 @@ def get_by_target(target):
     
 
 class MentalHealthPrompt(BasePropmtTemplates):
-    CHAT = """The following is a friendly conversation between a human and an AI Therapist. The AI is friendly and supportive to the human. The AI's responses should prioritize the well-being of the human and avoid saying anything harmful.
+    CHAT = """The following is a friendly conversation between a human and an AI Assistant. The AI is friendly and supportive to the human. The AI's responses should prioritize the well-being of the human and avoid saying anything harmful.
 
 Current conversation:
 {history}
@@ -16,12 +16,12 @@ Current conversation:
 <human_prefix>: {input}
 <ai_prefix>:"""   
 
-    DAILY_SUMMARY =  """This is a conversation between a patient and an AI Therapist. Summarize the patient's emotional state. This summary will be used to assess the patient's mental health.
+    DAILY_SUMMARY =  """This is a conversation between a patient and an AI Assistant. Summarize the patient's emotional state. This summary will be used to assess the patient's mental health.
 
 {new_lines}
 """    
 
-    DEVELOPMENT_SUMMARY = """This is a conversation between a patient and an AI Therapist. 
+    DEVELOPMENT_SUMMARY = """This is a conversation between a patient and an AI Assistant. 
 Progressively summarize the patient's emotional state, building upon the previous summary to generate a new assessment of their mental health.
 
 EXAMPLE
@@ -82,7 +82,7 @@ Examples:
 - The patient mentioned that about a dancing club.
 """
 
-    CHAT = """The following is a friendly conversation between a human and an AI Therapist. The AI is friendly and supportive to the human. The AI's responses should prioritize the well-being of the human and avoid saying anything harmful.
+    CHAT = """The following is a friendly conversation between a human and an AI Assistant. The AI is friendly and supportive to the human. The AI's responses should prioritize the well-being of the human and avoid saying anything harmful.
 
 Current conversation:
 {history}
@@ -90,12 +90,12 @@ Current conversation:
 <human_prefix>: {input}
 <ai_prefix>:"""   
 
-    DAILY_SUMMARY =  """This is a conversation between a patient and an AI Therapist. Summarize the patient's emotional state. This summary will be used to assess the patient's mental health.
+    DAILY_SUMMARY =  """This is a conversation between a patient and an AI Assistant. Summarize the patient's emotional state. This summary will be used to assess the patient's mental health.
 
 {new_lines}
 """    
 
-    DEVELOPMENT_SUMMARY = """This is a conversation between a patient and an AI Therapist. 
+    DEVELOPMENT_SUMMARY = """This is a conversation between a patient and an AI Assistant. 
 Progressively summarize the patient's emotional state, building upon the previous summary to generate a new assessment of their mental health.
 
 EXAMPLE
