@@ -59,6 +59,16 @@ The Streamlit UI server provides standard web server (HTML / HTTP endpoint) that
     # You can now view your Streamlit app in your browser.
     # Local URL: http://localhost:8501  <-- Web browser host address (URL)
 
+### Run the Streamlit UI server on Streamlit Community Cloud
+
+1. Fork the repo and sync any changes.
+2. Go to Strealit Community Cloud: https://streamlit.io/cloud
+3. Create a new app and link it to the forked repo
+4. Deploy the streamlit app
+
+
+
+
 ### Run the Voice User Interface server
 
 The Voice UI server provides a conversation interface for non-technical users, especially the patient under care.
