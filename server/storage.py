@@ -25,14 +25,25 @@ def upload(blob_name, content):
             json.dump(json.loads(content), f)
 
 def download(destination_blob_name):
-    """ Load the content of a file with the path destination_blob_name
+    """ Load the content of a file with the path destination_blob_name.
+    If no file exists, return an empty list
     """
     if USE_BUCKET:
-        return blob(destination_blob_name).download_as_string().decode("utf-8")
+        if blob(destination_blob_name).exists():
+            output = blob(destination_blob_name).download_as_string().decode("utf-8")
+        else:
+            output =  []
         # Need to put in some code here to account for missing .json. What should the behaviour be?
     else:
-        with open(os.path.join(STORAGE_PATH, destination_blob_name), "r") as f:
-            return json.load(f)
+        file_path = os.path.join(STORAGE_PATH, destination_blob_name)
+        if os.path.isfile(file_path): # If thee file exists, return the path
+            with open(os.path.join(STORAGE_PATH, destination_blob_name), "r") as f:
+                output = json.load(f)
+        else:
+            output = []
+
+    return output
+
 
 def writeUser(userId, user):
     upload(f"user/{userId}.json", json.dumps(user, indent=2))
