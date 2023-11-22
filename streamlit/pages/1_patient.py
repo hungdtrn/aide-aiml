@@ -64,3 +64,4 @@ if prompt:
             st.session_state.messages.append({"role": "assistant", "content": f'*{result}*'})
     except Exception as e:
         print(e) ## Need to add error log to server
+        st.text(e)
