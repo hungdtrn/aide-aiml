@@ -30,7 +30,7 @@ def download(destination_blob_name):
     """
     if USE_BUCKET:
         if blob(destination_blob_name).exists():
-            output = blob(destination_blob_name).download_as_string().decode("utf-8")
+            output = json.loads(blob(destination_blob_name).download_as_string().decode("utf-8"))
         else:
             output =  []
         # Need to put in some code here to account for missing .json. What should the behaviour be?
