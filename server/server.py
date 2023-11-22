@@ -7,10 +7,11 @@ from flask import Flask, jsonify, request, render_template, Response
 
 import storage
 import datetime
-from ai.chatsession import ChatSession
+from ai.chatsession import build_chat_session
 from ai.summariser import build_summariser
-from ai import VERSION
+from ai import VERSION, MODELS
 
+AI_MODEL = MODELS.CHATGPT
 app = Flask(__name__)
 
 chatSessionDict = {}
@@ -28,9 +29,10 @@ def _get_chatsession_or_create(userId):
         conversations = storage.readConversation(userId)
         carerInput = storage.readCarerInput(userId)
         medicalInput = storage.readMedicalInput(userId)
-        chatSessionDict[userId] = ChatSession(conversations=conversations,
-                                          carerInput=carerInput,
-                                          medicalInput=medicalInput)
+        chatSessionDict[userId] = build_chat_session(AI_MODEL ,
+                                                     conversations=conversations,
+                                                     carerInput=carerInput,
+                                                     medicalInput=medicalInput)
         return chatSessionDict[userId]
 
 
@@ -167,7 +169,7 @@ def getDailySummary():
             # Skip the summary if we don't have any conversation data for today!
             pass
         else:
-            summariser = build_summariser()
+            summariser = build_summariser(AI_MODEL)
             currentDailySummary = summariser.dailySummary(conversations[-1]["conversation"])
             dailySummary.append({
                 "date": _get_today(),
@@ -196,7 +198,7 @@ def getdevSummary():
             # Skip the summary if we don't have any conversation data for today!
             pass
         else:
-            summariser = build_summariser()
+            summariser = build_summariser(AI_MODEL)
 
             # Get past summary
             pastSumm = ""

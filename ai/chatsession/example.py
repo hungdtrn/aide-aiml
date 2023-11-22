@@ -1,6 +1,6 @@
 import os
 import json
-from .session import ChatSession
+from .models import build_chat_model
 
 if __name__ == "__main__":
     history_path = "new_history.json"
@@ -9,7 +9,7 @@ if __name__ == "__main__":
         with open(history_path, "r") as f:
             history = json.load(f)
 
-    application = ChatSession(history=history)
+    application = build_chat_model(history=history)
     # short, long = application.summarize()
     # print(short, long)
     

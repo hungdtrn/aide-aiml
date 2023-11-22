@@ -56,18 +56,19 @@ class BaseModel:
     human_prefix = ""
     ai_prefix = ""
     model = None
-    def __init__(self, history, carerInput, medicalInput) -> None:
+    def __init__(self, conversations, carerInput, medicalInput) -> None:
         load_dotenv()
         
-        if history:
-            self.memory = ConversationBufferMemory(chat_memory=self._loadHistoryToMemory(history))
+        self.conversations = conversations
+        if conversations:
+            self.memory = ConversationBufferMemory(chat_memory=self._loadConversationsToMemory(conversations))
         else:
             self.memory = ConversationBufferMemory()
 
 
-    def _loadHistoryToMemory(self, history):
+    def _loadConversationsToMemory(self, conversations):
         out = []
-        for sessions in history:
+        for sessions in conversations:
             for chat in sessions["conversation"]:
                 for k, v in chat.items():
                     if k != self.ai_prefix and k != self.human_prefix:
@@ -101,6 +102,14 @@ class BaseModel:
         )
         return chain(message)
     
+    def welcome(self):
+        if self.conversations:
+            msg = "Welcome back!"
+        else:
+            msg = "Hi! Please tell me about your day, or tell me how you are feeling "
+
+        return msg
+
     def chat(self, message, streaming):
         if not streaming:
             self.model.streaming = False
