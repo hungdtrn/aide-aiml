@@ -23,6 +23,7 @@ chatSessionDict = {}
 # d. For each topic. Prompt to get relevant information.
 # e. Save the topics and the information for later use
 # f. Use the topics and the information to generate welcome message
+# => Think of the age care worker rehearse what to do in the next day!
 
 # 2. Re-implement chat
 # a. Inputs: userDetails, prev conversations, current conversations, relevant contexts.
