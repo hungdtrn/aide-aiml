@@ -1,5 +1,6 @@
 import streamlit as st
 from utils import post
+from client import dailySummary
 import requests
 import json
 import pandas as pd
@@ -37,7 +38,8 @@ userID = st.text_input('PatientID', None)
 
 if st.checkbox('View daily Summary'):
 
-    response = post("dailySummary", {"userId": userID, "n" : 5})
+    # response = post("dailySummary", {"userId": userID, "n" : 5})
+    response = dailySummary(obj =  {"userId": userID, "n" : 5})
     df = pd.DataFrame.from_dict(response['response'])
 
 

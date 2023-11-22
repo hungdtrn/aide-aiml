@@ -37,3 +37,10 @@ def welcome(obj):
     Welcome function used for for user starting a session
     """
     return post("welcome", server_url, obj)
+
+
+def dailySummary(obj):
+    """
+    DailySummary function used for for user starting a session
+    """
+    return post("dailySummary", server_url, obj)
