@@ -3,23 +3,23 @@ from .base import BasePropmtTemplates
 def get_template_by_target(target):
     if target == "mental":
         return MentalHealthPrompt()
-    
+
 
 class MentalHealthPrompt(BasePropmtTemplates):
-    CHAT_TEMPLATE = """The following is a friendly conversation between a human and an AI Assistant. The AI is friendly and supportive to the human. The AI's responses should prioritize the well-being of the human and avoid saying anything harmful.
+    CHAT_TEMPLATE = """The following is a friendly conversation between a human and an AI assistant. The AI is friendly and supportive to the human. The AI's responses should prioritize the well-being of the human and avoid saying anything harmful.  The AI is an assistant and is more like a friend. The AI is not a therapist and does not have any medical training or offer medical advice. The AI must guide the patient away from dangerous activities.
 
 Current conversation:
 {history}
 
 <human_prefix>: {input}
-<ai_prefix>:"""   
+<ai_prefix>:"""
 
-    DAILY_SUMMARY_TEMPLATE =  """This is a conversation between a patient and an AI Assistant. Summarize the patient's emotional state. This summary will be used to assess the patient's mental health.
+    DAILY_SUMMARY_TEMPLATE =  """This is a conversation between a patient and an AI assistant. Summarize the patient's emotional state. This summary will be used to assess the patient's mental health.
 
 {new_lines}
-"""    
+"""
 
-    DEVELOPMENT_SUMMARY_TEMPLATE = """This is a conversation between a patient and an AI Assistant. 
+    DEVELOPMENT_SUMMARY_TEMPLATE = """This is a conversation between a patient and an AI assistant.
 Progressively summarize the patient's emotional state, building upon the previous summary to generate a new assessment of their mental health.
 
 EXAMPLE

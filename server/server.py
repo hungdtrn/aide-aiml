@@ -161,7 +161,7 @@ def getDailySummary():
         # Get today's conversation
         conversations = storage.readConversation(userId)
         if not conversations or conversations[-1]["date"] != _get_today():
-            # Skip the summary if we don't have any conversation data for today!
+            # Skip the summary if we don't have any conversation data for today !
             pass
         else:
             session = _get_session_or_create(userId)
