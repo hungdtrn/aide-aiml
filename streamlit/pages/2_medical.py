@@ -44,27 +44,24 @@ else:
 
 if st.checkbox('View daily Summary', disabled = checkbox_disabled):
 
-    # response = post("dailySummary", {"userId": userID, "n" : 5})
-    response = dailySummary(obj =  {"userId": userID, "n" : 5})
+    num_tabs = 5
+    response = dailySummary(obj =  {"userId": userID, "n" : num_tabs})
     df = pd.DataFrame.from_dict(response['response'])
+    # Check dataframe length, and if shorter than n, return only that many tabs
+    if len(df) < num_tabs:
+        num_tabs = len(df)
 
 
-    df_summary= df[['date', 'summary']].tail(5).fillna("No information") # Take the last 5 entries, and fill NaN
+    df_summary= df[['date', 'summary']].tail(num_tabs).fillna("No information") # Take the appropriate number of tabs
     df_summary = df_summary.replace('', 'No information')
-    # df_summary.loc['date'] = df_summary['date'].map(
-    #                                 lambda x : str(pd.to_datetime(datetime.datetime.utcfromtimestamp(x)).date())
-    #                                     )# Convert to date time
+
     # Convert the 'date' column to datetime
     df_summary['date'] = pd.to_datetime(df_summary['date'])
 
     # Update the 'date' column with the date in string format
     df_summary['date'] = df_summary['date'].dt.date.astype(str)
 
-
-
-    tab1, tab2, tab3 = st.tabs(df_summary['date'].to_list()) # Pass in the datetimes as tab headers
-
-    tab_list = [tab1, tab2, tab3] # create a tab list
+    tab_list = st.tabs(df_summary['date'].to_list()) # Pass in the datetimes as tab headers
 
     # Populate the tabs
     for i in range(len(tab_list)):
