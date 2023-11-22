@@ -91,7 +91,7 @@ class BaseModel:
     def _chat(self, message, **kwargs):
         # Get the prompt templates based on (1) the device and (2) the client
         templates = get_template()
-        prompt_template = templates.format_prompt(templates.CHAT,
+        prompt_template = templates.get_prompt_template(templates.CHAT,
                                                   human_prefix=self.human_prefix, ai_prefix=self.ai_prefix)
 
         prompt = PromptTemplate.from_template(prompt_template)

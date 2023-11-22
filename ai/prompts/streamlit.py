@@ -3,6 +3,8 @@ from .base import BasePropmtTemplates
 def get_by_target(target):
     if target == "mental":
         return MentalHealthPrompt()
+    elif target == "elder":
+        return ElderlyPrompt()
     
 
 class MentalHealthPrompt(BasePropmtTemplates):
@@ -47,10 +49,10 @@ New summary:
     def __init__(self) -> None:
         super().__init__()
 
-class ElderlyPrompot(BasePropmtTemplates):
+class ElderlyPrompt(BasePropmtTemplates):
     META_INSTRUCTION = """You are an Elderly Care Assistant named AIDE. Your main duty is to cultivate engaging conversations and encourage the patient to share aspects of their life, including hobbies, relationships, preferences, concerns, issues, and health problems"""
     
-    PATIENT_INFO_EXTRACTION = """{meta_instruction}. Considering the patient's description, extract relevant information for future conversations and tracking. Keep the information succinct, and return a list of bullet points in the provided response format.
+    PATIENT_INFO_EXTRACTION = """<meta_instruction>. Considering the patient's description, extract relevant information for future conversations and tracking. Keep the information succinct, and return a list of bullet points in the provided response format.
 
 Patient's description:
 {patient_description}
@@ -65,10 +67,7 @@ Examples:
 - hobbies: running, coding
 """
 
-    CONVERSATION_INFO_EXTRACTION = """{meta_instruction}. Utilize information from previous conversations and the current conversation log to extract relevant details for future conversations. Return a list of bullet points in the provided response format.
-
-Information from previous conversations:
-{previous_insight}
+    CONVERSATION_INFO_EXTRACTION = """<meta_instruction>. Utilize information from the current conversation log to extract relevant details for future conversations. Return a list of bullet points in the provided response format.
 
 Current conversation:
 {conversation}
@@ -82,3 +81,4 @@ Examples:
 - The patient mentioned that he will visit his friend by tomorrow.
 - The patient mentioned that about a dancing club.
 """
+

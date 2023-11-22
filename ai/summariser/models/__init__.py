@@ -1,6 +1,6 @@
 from .chatgpt import ChatGPT
 
-def build_model(model_type="chatgpt"):
+def build_model(model_type):
     if model_type == "chatgpt":
         return ChatGPT()
     else:

@@ -1,4 +1,5 @@
 class BasePropmtTemplates:
+    META_INSTRUCTION = ""
     PATIENT_INFO_EXTRACTION = ""
     CONVERSATION_INFO_EXTRACTION = ""
     TOPIC_SUGGESTION_WITH_CONVERSATION = ""
@@ -10,5 +11,5 @@ class BasePropmtTemplates:
     CHAT = ""
     CONVERSATION_SUMMARY = ""
     DEVELOPMENT_SUMMARY = ""
-    def format_prompt(self, prompt, human_prefix, ai_prefix):
-        return prompt.replace("<human_prefix>", human_prefix).replace("<ai_prefix>", ai_prefix)
+    def get_prompt_template(self, prompt, human_prefix, ai_prefix):
+        return prompt.replace("<human_prefix>", human_prefix).replace("<ai_prefix>", ai_prefix).replace("<meta_instruction>", self.META_INSTRUCTION)

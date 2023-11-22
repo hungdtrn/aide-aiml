@@ -26,23 +26,23 @@ class BaseModel:
     def __init__(self) -> None:
         load_dotenv()
     
-    
-    def _dailySummary(self, currentConversation):
+    def dailySummary(self, conversation):
         templates = get_template()
-        dailySummary_template = templates.format_prompt(templates.DAILY_SUMMARY,
-                                                                human_prefix=self.human_prefix,
-                                                                ai_prefix=self.ai_prefix)
+        dailySummary_template = templates.get_prompt_template(templates.DAILY_SUMMARY,
+                                                        human_prefix=self.human_prefix,
+                                                        ai_prefix=self.ai_prefix)
         dailySummary_prompt = PromptTemplate(input_variables=["new_lines"],
                                                      template=dailySummary_template)
         conversation_chain = LLMChain(llm=self.model, prompt=dailySummary_prompt)
 
-        dailySummary = conversation_chain(currentConversation)["text"]
+        dailySummary = conversation_chain(conversation)["text"]
         return dailySummary
     
-    def _devSummary(self, pastSummary, currentConversation):
+
+    def devSummary(self, pastSummary, conversation):
         templates = get_template()
         
-        devSummary_template = templates.format_prompt(templates.DEVELOPMENT_SUMMARY,
+        devSummary_template = templates.get_prompt_template(templates.DEVELOPMENT_SUMMARY,
                                                                human_prefix=self.human_prefix,
                                                                ai_prefix=self.ai_prefix)
 
@@ -52,15 +52,8 @@ class BaseModel:
 
         development_chain = LLMChain(llm=self.model, prompt=devSummary_prompt)
         devSummary = development_chain({"summary": pastSummary, 
-                                        "new_lines": currentConversation})["text"]
+                                        "new_lines": conversation})["text"]
 
         return devSummary
 
-    def dailySummary(self, conversation):
-        currentSummary = self._dailySummary(conversation)
-        return currentSummary
-
-    def devSummary(self, pastSummary, conversation):
-        devSummary = self._devSummary(pastSummary, conversation)
-        return devSummary
 
