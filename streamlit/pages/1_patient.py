@@ -6,20 +6,10 @@ from utils import post, stream
 st.title("AIDE")
 st.text("Patient page")
 
-# NOTE -  This code was copied from streamlit-app.py on 20 Nov at 10:45 am.
-# It's not reflective of the current version, for testing purposes only
+
+# server_url = "http://127.0.0.1:8080"
 
 
-server_url = "http://127.0.0.1:8080"
-
-
-# Server URL
-
-# response
-# userId
-
-# First prompt
-#prompt = st.text_input("Start journaling your thoughts")
 
 # Button
 # ------------------- Hung implementation ------------------
