@@ -1,6 +1,6 @@
 import streamlit as st
 from utils import post
-from client import dailySummary
+from client import dailySummary, dailyIndicator
 import requests
 import json
 import pandas as pd
@@ -71,7 +71,7 @@ if st.checkbox('View Indicator Trends'):
     #--- Indicator trends---#
     st.header("Indicator Trends")
 
-    indicator = post("indicator", {"userId": userID, "n" : 5})
+    indicator = dailyIndicator(obj = {"userId": userID, "n" : 5})
     df_indicators = pd.DataFrame.from_dict(indicator['response'])
     df_indicators[['mental_health','physical_health','social_health']] = df_indicators['indicators'].apply(pd.Series)
 

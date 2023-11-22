@@ -41,6 +41,12 @@ def welcome(obj):
 
 def dailySummary(obj):
     """
-    DailySummary function used for for user starting a session
+    DailySummary function used for for user pulling through a dailySummary
     """
     return post("dailySummary", server_url, obj)
+
+def dailyIndicator(obj):
+    """
+    DailyIndicator function used for for user pulling through the medical indicators
+    """
+    return post("indicator", server_url, obj)
