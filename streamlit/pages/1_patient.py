@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 import json
-from utils import post, stream, get
+from utils import post, stream
 # Page title
 st.title("AIDE")
 st.text("Patient page")
@@ -35,7 +35,7 @@ if "messages" not in st.session_state:
 #Initialise the chat session in the server and get the display message
 message = st.chat_message("assistant")
 try:
-    message.write(get("welcome", {"userId": 0})["response"])
+    message.write(post("welcome", {"userId": 0})["response"])
 except:
     message.write("Apologies we seem to be having internal issues, We are trying to fix this currently. Thank you for your patience")
 
@@ -59,7 +59,7 @@ prompt = st.chat_input("Type Message.......")
 # Implementation of the chat history and containerized conversation
 if prompt:
     # Add user message to chat history
-    st.session_state.messages.append({"role": "user", "content": prompt})    
+    st.session_state.messages.append({"role": "user", "content": prompt})
     try:
         # Display user message in chat message container
         st.chat_message("user").markdown(prompt)
@@ -82,6 +82,3 @@ if prompt:
             st.session_state.messages.append({"role": "assistant", "content": f'*{result}*'})
     except:
         print('') ## Need to add error log to server
-        
-
-

@@ -34,5 +34,5 @@ def stream(path, obj):
 
     return response.iter_content(None)
 
-if __name__ == "__main__":
-    print(post("welcome", {"userId": 0})["response"])
+# if __name__ == "__main__":
+#     print(post("welcome", {"userId": 0})["response"])

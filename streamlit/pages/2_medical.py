@@ -1,5 +1,5 @@
 import streamlit as st
-from utils import post, get
+from utils import post
 import requests
 import json
 import pandas as pd
@@ -37,9 +37,9 @@ userID = st.text_input('PatientID', None)
 
 if st.checkbox('View daily Summary'):
 
-    response = get("dailySummary", {"userId": userID, "n" : 5})
+    response = post("dailySummary", {"userId": userID, "n" : 5})
     df = pd.DataFrame.from_dict(response['response'])
-    
+
 
     df_summary= df[['date', 'summary']].tail(5).fillna("No information") # Take the last 5 entries, and fill NaN
     df_summary = df_summary.replace('', 'No information')
@@ -52,24 +52,24 @@ if st.checkbox('View daily Summary'):
     # Update the 'date' column with the date in string format
     df_summary['date'] = df_summary['date'].dt.date.astype(str)
 
-    
 
-    tab1, tab2 = st.tabs(df_summary['date'].to_list()) # Pass in the datetimes as tab headers
 
-    tab_list = [tab1, tab2] # create a tab list
+    tab1, tab2, tab3 = st.tabs(df_summary['date'].to_list()) # Pass in the datetimes as tab headers
+
+    tab_list = [tab1, tab2, tab3] # create a tab list
 
     # Populate the tabs
     for i in range(len(tab_list)):
         with tab_list[i]:
             st.header(df_summary['date'].iloc[i])
             stx.scrollableTextbox(text = df_summary['summary'].iloc[i], border= True, key = i)
-    
+
 
 if st.checkbox('View Indicator Trends'):
     #--- Indicator trends---#
     st.header("Indicator Trends")
 
-    indicator = get("indicator", {"userId": userID, "n" : 5})
+    indicator = post("indicator", {"userId": userID, "n" : 5})
     df_indicators = pd.DataFrame.from_dict(indicator['response'])
     df_indicators[['mental_health','physical_health','social_health']] = df_indicators['indicators'].apply(pd.Series)
 

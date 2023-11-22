@@ -150,7 +150,7 @@ def chat_stream():
     response = app.response_class(generate(), mimetype='text/text')
     return response
 
-@app.route("/dailySummary", methods=['GET'])
+@app.route("/dailySummary", methods=['POST'])
 def getDailySummary():
     """ Get the summary of today and the past n-1 days
     """
@@ -215,7 +215,7 @@ def getdevSummary():
         "response": devSummary[-num_summary:]
     }
 
-@app.route("/indicator", methods=['GET'])
+@app.route("/indicator", methods=['POST'])
 def getIndicator():
     userId = request.json["userId"]
     indicator = storage.readIndicator(userId)
