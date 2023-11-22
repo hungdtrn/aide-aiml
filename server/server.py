@@ -27,7 +27,10 @@ chatSessionDict = {}
 
 # 2. Re-implement chat
 # a. Inputs: userDetails, prev conversations, current conversations, relevant contexts.
-# b. Implement update relevant contexts from the prompt.
+# b. Retrieve relevant information from the user's message.
+
+# NOTE:
+# The retrieval/memory things could be done later. At first, just use the context from the previous conversations. 
 
 
 def _get_chatsession_or_create(userId):
