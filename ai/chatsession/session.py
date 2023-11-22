@@ -13,9 +13,9 @@ class ChatSession:
 
     def welcome(self):
         if self.conversations:
-            msg = "Welcome back!"
+            msg = "Welcome back !"
         else:
-            msg = "Hi! Please tell me about your day, or tell me how you are feeling "
+            msg = "Hi ! Please tell me about your day, or tell me how you are feeling"
 
         return msg
 
