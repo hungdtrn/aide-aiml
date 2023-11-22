@@ -71,55 +71,58 @@ if st.checkbox('View daily Summary', disabled = checkbox_disabled):
 
 
 if st.checkbox('View Indicator Trends', disabled = checkbox_disabled):
-    #--- Indicator trends---#
-    st.header("Indicator Trends")
+    try:
+        indicator = dailyIndicator(obj = {"userId": userID, "n" : 5})
+        #--- Indicator trends---#
+        st.header("Indicator Trends")
 
-    indicator = dailyIndicator(obj = {"userId": userID, "n" : 5})
-    df_indicators = pd.DataFrame.from_dict(indicator['response'])
-    df_indicators[['mental_health','physical_health','social_health']] = df_indicators['indicators'].apply(pd.Series)
+        df_indicators = pd.DataFrame.from_dict(indicator['response'])
+        df_indicators[['mental_health','physical_health','social_health']] = df_indicators['indicators'].apply(pd.Series)
 
-    # Create radio buttons for graph
-    indicator = st.radio(
-        "Please select an indicator to view trend",
-        ["Mental health", "Social health", "Physical health", "All"])
+        # Create radio buttons for graph
+        indicator = st.radio(
+            "Please select an indicator to view trend",
+            ["Mental health", "Social health", "Physical health", "All"])
 
-    if indicator == 'Mental health':
-        fig, ax = plt.subplots(figsize=(8, 6))
-        ax.plot(df_indicators['date'], df_indicators['mental_health'], label = 'Mental Health', color = 'blue' )
-        ax.set_ylim(0,5.5)
-        ax.set_xlabel('Date')
-        ax.legend()
-        # Display plot
-        st.pyplot(fig)
+        if indicator == 'Mental health':
+            fig, ax = plt.subplots(figsize=(8, 6))
+            ax.plot(df_indicators['date'], df_indicators['mental_health'], label = 'Mental Health', color = 'blue' )
+            ax.set_ylim(0,5.5)
+            ax.set_xlabel('Date')
+            ax.legend()
+            # Display plot
+            st.pyplot(fig)
 
-    elif indicator == 'Social health':
-        fig, ax = plt.subplots(figsize=(8, 6))
-        ax.plot(df_indicators['date'], df_indicators['social_health'], label = 'Social Health', color = 'green')
-        ax.set_ylim(0,5.5)
-        ax.set_xlabel('Date')
-        ax.legend()
+        elif indicator == 'Social health':
+            fig, ax = plt.subplots(figsize=(8, 6))
+            ax.plot(df_indicators['date'], df_indicators['social_health'], label = 'Social Health', color = 'green')
+            ax.set_ylim(0,5.5)
+            ax.set_xlabel('Date')
+            ax.legend()
 
-        # Display plot
-        st.pyplot(fig)
+            # Display plot
+            st.pyplot(fig)
 
-    elif indicator == 'Physical health':
-        fig, ax = plt.subplots(figsize=(8, 6))
-        ax.plot(df_indicators['date'], df_indicators['physical_health'], label = 'Physical Health', color = 'orange')
-        ax.set_ylim(0,5.5)
-        ax.set_xlabel('Date')
-        ax.legend()
+        elif indicator == 'Physical health':
+            fig, ax = plt.subplots(figsize=(8, 6))
+            ax.plot(df_indicators['date'], df_indicators['physical_health'], label = 'Physical Health', color = 'orange')
+            ax.set_ylim(0,5.5)
+            ax.set_xlabel('Date')
+            ax.legend()
 
-        # Display plot
-        st.pyplot(fig)
+            # Display plot
+            st.pyplot(fig)
 
-    else:
-        fig, ax = plt.subplots(figsize=(8, 6))
-        ax.plot(df_indicators['date'], df_indicators['mental_health'], label = 'Mental Health', color = 'blue' )
-        ax.plot(df_indicators['date'], df_indicators['social_health'], label = 'Social Health', color = 'green')
-        ax.plot(df_indicators['date'], df_indicators['physical_health'], label = 'Physical Health', color = 'orange')
-        ax.set_xlabel('Date')
-        ax.set_ylim(0,5.5)
-        ax.legend()
+        else:
+            fig, ax = plt.subplots(figsize=(8, 6))
+            ax.plot(df_indicators['date'], df_indicators['mental_health'], label = 'Mental Health', color = 'blue' )
+            ax.plot(df_indicators['date'], df_indicators['social_health'], label = 'Social Health', color = 'green')
+            ax.plot(df_indicators['date'], df_indicators['physical_health'], label = 'Physical Health', color = 'orange')
+            ax.set_xlabel('Date')
+            ax.set_ylim(0,5.5)
+            ax.legend()
 
-        # Display plot
-        st.pyplot(fig)
+            # Display plot
+            st.pyplot(fig)
+    except:
+        st.text("Indicators not available")
