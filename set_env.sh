@@ -9,8 +9,8 @@ export REPO_HOME=/Users/joe/code/aide-aiml/
 
 #MODEL=gpt-4
 export MODEL=gpt-3.5-turbo
-# export BUCKET_NAME=joe-aide # Enable when wanting to use GCP buckets
-export BUCKET_NAME= #Enable when using local storage
+export BUCKET_NAME=joe-aide # Enable when wanting to use GCP buckets
+# export BUCKET_NAME= #Enable when using local storage
 export SCHEDULE="0 * * * *"
 export NOTIFICATION_SRC=$REPO_HOME/notification
 

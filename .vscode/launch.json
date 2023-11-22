@@ -7,8 +7,8 @@
             "flask": true,
             "request": "launch",
             // "cwd": "/Users/joe/code/aide-aiml/server",
-            "cwd": "${cwd}server",
-            "program": "server.py",
+            "cwd": "${cwd}",
+            "program": "server/server.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "env": {

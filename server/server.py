@@ -53,7 +53,7 @@ def welcome():
     userId = request.json["userId"]
     session = _get_session_or_create(userId)
     conversations = storage.readConversation(userId)
-    if not conversations or conversations[-1]["date"] != _get_today():
+    if len(conversations)==0 or conversations[-1]["date"] != _get_today():
         conversations.append({
             "date": _get_today(),
             "conversation": [],
