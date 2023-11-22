@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 import time
 from dotenv import load_dotenv
@@ -90,7 +90,7 @@ class BaseModel:
     def _chat(self, message, **kwargs):
         # Get the prompt templates based on (1) the device and (2) the client
         templates = get_template()
-        prompt_template = templates.format_prompt(templates.CHAT_TEMPLATE,
+        prompt_template = templates.format_prompt(templates.CHAT,
                                                   human_prefix=self.human_prefix, ai_prefix=self.ai_prefix)
 
         prompt = PromptTemplate.from_template(prompt_template)
