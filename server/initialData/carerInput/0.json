@@ -3,7 +3,6 @@
         "id": 0,
         "createdAt": "2023-11-21T16:31:31.237392",
         "doctorId": 0,
-        "details": "The patient’s details provided by carers are … The patient's name is Pandora, born 1st January 1940 and lives in 1 Infinite Loop, Cupertino, CA. Contact number is 0000-0000. Primary carer is her daughter Penny who can be contacted on 0000-0001. Medicare number is 0000-0002, Current medications include aspirin. Prefers simple food, toast or fruit for breakfast, sandwiches for lunch, and for dinner cooked meals like chicken with vegetables or similar and a small dessert. Frail, but still moving around okay. Forgetfullness. No existing support services. Speaks English. No specific cultural considerations. No advanced care directives.",
-        "extracted": []
+        "details": "The patient's name is Pandora, born 1st January 1940 and lives in 1 Infinite Loop, Cupertino, CA. Contact number is 0000-0000. Primary carer is her daughter Penny who can be contacted on 0000-0001. Medicare number is 0000-0002, Current medications include aspirin. Prefers simple food, toast or fruit for breakfast, sandwiches for lunch, and for dinner cooked meals like chicken with vegetables or similar and a small dessert. Frail, but still moving around okay. Forgetfullness. No existing support services. Speaks English. No specific cultural considerations. No advanced care directives."
     }
 ]

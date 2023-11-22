@@ -54,6 +54,9 @@ def writeUser(userId, user):
     writeMedicalInput(userId, [])
     writeCarerInput(userId, [])
 
+def updateUser(userId, user):
+    upload(f"user/{userId}.json", json.dumps(user, indent=2))
+
 def writeConversation(userId, conversation):
     upload(f"conversation/{userId}.json", json.dumps(conversation, indent=2))
 

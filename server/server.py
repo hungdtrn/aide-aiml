@@ -6,21 +6,28 @@ import json
 from flask import Flask, jsonify, request, render_template, Response
 
 import storage
-import datetime
-from ai.chatsession import build_chat_session
-from ai.summariser import build_summariser
-from ai import VERSION, MODELS
+from utils import get_now, get_today, get_ai_extracted_user_details
+from ai import VERSION, MODELS, build_chat_session, build_summariser, build_feat_extractor
 
 AI_MODEL = MODELS.CHATGPT
 app = Flask(__name__)
 
 chatSessionDict = {}
 
-def _get_today():
-    return datetime.datetime.now().strftime("%Y-%m-%d")
+# TODO: Refine chat logics
 
-def _get_now():
-    return datetime.datetime.now().isoformat()
+# 1. Implement get topic:
+# a. Load the previous chat from 3 previous days
+# b. Randomly load chat from 4 different days in the past. 
+# c. Prompt to get the topics.
+# d. For each topic. Prompt to get relevant information.
+# e. Save the topics and the information for later use
+# f. Use the topics and the information to generate welcome message
+
+# 2. Re-implement chat
+# a. Inputs: userDetails, prev conversations, current conversations, relevant contexts.
+# b. Implement update relevant contexts from the prompt.
+
 
 def _get_chatsession_or_create(userId):
     if userId in chatSessionDict:
@@ -34,8 +41,6 @@ def _get_chatsession_or_create(userId):
                                                      carerInput=carerInput,
                                                      medicalInput=medicalInput)
         return chatSessionDict[userId]
-
-
 
 @app.route('/')
 def test():
@@ -58,9 +63,9 @@ def welcome():
     userId = request.json["userId"]
     session = _get_chatsession_or_create(userId)
     conversations = storage.readConversation(userId)
-    if len(conversations)==0 or conversations[-1]["date"] != _get_today():
+    if len(conversations)==0 or conversations[-1]["date"] != get_today():
         conversations.append({
-            "date": _get_today(),
+            "date": get_today(),
             "conversation": [],
             "version": VERSION,
             "tokeCnt": 0,
@@ -68,7 +73,7 @@ def welcome():
 
     response = session.welcome()
     conversations[-1]["conversation"].append({
-        "time": _get_now(),
+        "time": get_now(),
         session.ai_prefix: response,
         "tokenCnt": 0,
     })
@@ -80,30 +85,40 @@ def welcome():
 
 @app.route("/chat", methods=['POST'])
 def chat():
-    """ Chat with ChatGPT
+    """ Chat with the language model
     """
+
+    # Get the chat session
     userId = request.json["userId"]
     session = _get_chatsession_or_create(userId)
 
+    # Get the conversation history
     conversations = storage.readConversation(userId)
-    if not conversations or conversations[-1]["date"] != _get_today():
+
+    # Check if the conversation of today is created. 
+    # If the today's conversation is not created, create it.
+    if not conversations or conversations[-1]["date"] != get_today():
         conversations.append({
-            "date": _get_today(),
+            "date": get_today(),
             "conversation": [],
             "version": VERSION,
             "tokeCnt": 0,
         })
 
     message = request.json["message"]
+
+    # Update the conversation history with the human's message
     conversations[-1]["conversation"].append({
-        "time": _get_now(),
+        "time": get_now(),
         session.human_prefix: message,
         "tokenCnt": 0,
     })
 
+        
+    
     response = session.chat(message)
     conversations[-1]["conversation"].append({
-        "time": _get_now(),
+        "time": get_now(),
         session.ai_prefix: response,
         "tokenCnt": 0,
     })
@@ -116,26 +131,31 @@ def chat():
 
 @app.route("/chat_stream", methods=['POST'])
 def chat_stream():
-    """ Chat with ChatGPT, but streaming tokens
+    """ Chat with the language model
     """
+
+    # Get the chat session
     userId = request.json["userId"]
     session = _get_chatsession_or_create(userId)
     message = request.json["message"]
 
     conversations = storage.readConversation(userId)
-    if not conversations or conversations[-1]["date"] != _get_today():
+    if not conversations or conversations[-1]["date"] != get_today():
         conversations.append({
-            "date": _get_today(),
+            "date": get_today(),
             "conversation": [],
             "version": VERSION,
             "tokeCnt": 0,
         })
 
     conversations[-1]["conversation"].append({
-        "time": _get_now(),
+        "time": get_now(),
         session.human_prefix: message,
         "tokenCnt": 0,
     })
+
+    # Get the details AI extracted from the carer and medical inputs
+    userDetails = get_ai_extracted_user_details(userId)
 
     response_gen = session.chat(message, streaming=True)
     def generate():
@@ -145,7 +165,7 @@ def chat_stream():
             yield word
         msg.strip()
         conversations[-1]["conversation"].append({
-            "time": _get_now(),
+            "time": get_now(),
             session.ai_prefix: msg,
             "tokenCnt": 0,
         })
@@ -162,17 +182,17 @@ def getDailySummary():
     userId = request.json["userId"]
     dailySummary = storage.readDailySummary(userId)
     num_summary = request.json["n"]
-    if not dailySummary or dailySummary[-1]["date"] != _get_today():
+    if not dailySummary or dailySummary[-1]["date"] != get_today():
         # Get today's conversation
         conversations = storage.readConversation(userId)
-        if not conversations or conversations[-1]["date"] != _get_today():
+        if not conversations or conversations[-1]["date"] != get_today():
             # Skip the summary if we don't have any conversation data for today!
             pass
         else:
             summariser = build_summariser(AI_MODEL)
             currentDailySummary = summariser.dailySummary(conversations[-1]["conversation"])
             dailySummary.append({
-                "date": _get_today(),
+                "date": get_today(),
                 "summary": currentDailySummary,
                 "tokenCnt": 0,
                 "aiVersion": VERSION,
@@ -190,11 +210,11 @@ def getdevSummary():
     devSummary = storage.readDevSummary(userId)
     num_summary = request.json["n"]
 
-    if not devSummary or devSummary[-1]["date"] != _get_today():
+    if not devSummary or devSummary[-1]["date"] != get_today():
         # Get today's conversation
         conversations = storage.readConversation(userId)
         currentConv = conversations[-1]["conversation"]
-        if not conversations or conversations[-1]["date"] != _get_today():
+        if not conversations or conversations[-1]["date"] != get_today():
             # Skip the summary if we don't have any conversation data for today!
             pass
         else:
@@ -209,7 +229,7 @@ def getdevSummary():
             currentdevSummary = summariser.devSummary(pastSumm, currentConv)
 
             devSummary.append({
-                "date": _get_today(),
+                "date": get_today(),
                 "summary": currentdevSummary,
                 "tokenCnt": 0,
                 "aiVersion": VERSION,
@@ -228,7 +248,7 @@ def getIndicator():
 
     # TODO: implemenent the session indicato
 
-    # if not indicator or indicator[-1]["date"] != _get_today():
+    # if not indicator or indicator[-1]["date"] != get_today():
     #     session = _get_chatsession_or_create(userId)
     #     currentindicator = session.indicator()
     #     indicator.append(currentindicator)
