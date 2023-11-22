@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
 import time
 from dotenv import load_dotenv
@@ -64,7 +64,6 @@ class BaseModel:
         else:
             self.memory = ConversationBufferMemory()
 
-
     def _loadHistoryToMemory(self, history):
         out = []
         for sessions in history:
@@ -90,7 +89,7 @@ class BaseModel:
     def _chat(self, message, **kwargs):
         # Get the prompt templates based on (1) the device and (2) the client
         templates = get_template()
-        prompt_template = templates.format_prompt(templates.CHAT,
+        prompt_template = templates.format_prompt(templates.CHAT_TEMPLATE,
                                                   human_prefix=self.human_prefix, ai_prefix=self.ai_prefix)
 
         prompt = PromptTemplate.from_template(prompt_template)
@@ -101,6 +100,47 @@ class BaseModel:
         )
         return chain(message)
     
+    def _dailySummary(self, currentConversation):
+        templates = get_template()
+        dailySummary_template = templates.format_prompt(templates.DAILY_SUMMARY_TEMPLATE,
+                                                                human_prefix=self.human_prefix,
+                                                                ai_prefix=self.ai_prefix)
+        dailySummary_prompt = PromptTemplate(input_variables=["new_lines"],
+                                                     template=dailySummary_template)
+        conversation_chain = LLMChain(llm=self.model, prompt=dailySummary_prompt)
+
+        dailySummary = conversation_chain(currentConversation)["text"]
+        return dailySummary
+    
+    def _devSummary(self, pastSummary, currentConversation):
+        templates = get_template()
+        
+        devSummary_template = templates.format_prompt(templates.DEVELOPMENT_SUMMARY_TEMPLATE,
+                                                               human_prefix=self.human_prefix,
+                                                               ai_prefix=self.ai_prefix)
+
+        
+        devSummary_prompt = PromptTemplate(template=devSummary_template,
+                                                    input_variables=["summary", "new_lines"])
+
+        development_chain = LLMChain(llm=self.model, prompt=devSummary_prompt)
+        devSummary = development_chain({"summary": pastSummary, 
+                                        "new_lines": currentConversation})["text"]
+
+        return devSummary
+
+    def dailySummary(self, conversation):
+        self.model.streaming = False
+        self.model.callbacks = []
+        currentSummary = self._dailySummary(conversation)
+        return currentSummary
+
+    def devSummary(self, pastSummary, conversation):
+        self.model.streaming = False
+        self.model.callbacks = []
+        devSummary = self._devSummary(pastSummary, conversation)
+        return devSummary
+
     def chat(self, message, streaming):
         if not streaming:
             self.model.streaming = False

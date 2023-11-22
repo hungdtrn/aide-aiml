@@ -8,10 +8,12 @@ from flask import Flask, jsonify, request, render_template, Response
 import storage
 import datetime
 from ai.chatsession import ChatSession
+from ai.summariser import build_summariser
 from ai import VERSION
 
 app = Flask(__name__)
-sessionDict = {}
+
+chatSessionDict = {}
 
 def _get_today():
     return datetime.datetime.now().strftime("%Y-%m-%d")
@@ -19,17 +21,18 @@ def _get_today():
 def _get_now():
     return datetime.datetime.now().isoformat()
 
-def _get_session_or_create(userId):
-    if userId in sessionDict:
-        return sessionDict[userId]
+def _get_chatsession_or_create(userId):
+    if userId in chatSessionDict:
+        return chatSessionDict[userId]
     else:
         conversations = storage.readConversation(userId)
         carerInput = storage.readCarerInput(userId)
         medicalInput = storage.readMedicalInput(userId)
-        sessionDict[userId] = ChatSession(conversations=conversations,
+        chatSessionDict[userId] = ChatSession(conversations=conversations,
                                           carerInput=carerInput,
                                           medicalInput=medicalInput)
-        return sessionDict[userId]
+        return chatSessionDict[userId]
+
 
 
 @app.route('/')
@@ -41,7 +44,7 @@ def createUser():
     userId = request.json["userId"]
     storage.writeUser(userId, request.json)
 
-    sessionDict[userId] = {
+    chatSessionDict[userId] = {
         "history": [],
     }
     return json.dumps({"userId": request.json["userId"]})
@@ -51,7 +54,7 @@ def welcome():
     """ Get the welcome message from the server
     """
     userId = request.json["userId"]
-    session = _get_session_or_create(userId)
+    session = _get_chatsession_or_create(userId)
     conversations = storage.readConversation(userId)
     if len(conversations)==0 or conversations[-1]["date"] != _get_today():
         conversations.append({
@@ -78,7 +81,7 @@ def chat():
     """ Chat with ChatGPT
     """
     userId = request.json["userId"]
-    session = _get_session_or_create(userId)
+    session = _get_chatsession_or_create(userId)
 
     conversations = storage.readConversation(userId)
     if not conversations or conversations[-1]["date"] != _get_today():
@@ -114,7 +117,7 @@ def chat_stream():
     """ Chat with ChatGPT, but streaming tokens
     """
     userId = request.json["userId"]
-    session = _get_session_or_create(userId)
+    session = _get_chatsession_or_create(userId)
     message = request.json["message"]
 
     conversations = storage.readConversation(userId)
@@ -164,8 +167,8 @@ def getDailySummary():
             # Skip the summary if we don't have any conversation data for today!
             pass
         else:
-            session = _get_session_or_create(userId)
-            currentDailySummary = session.dailySummary(conversations[-1]["conversation"])
+            summariser = build_summariser()
+            currentDailySummary = summariser.dailySummary(conversations[-1]["conversation"])
             dailySummary.append({
                 "date": _get_today(),
                 "summary": currentDailySummary,
@@ -179,11 +182,12 @@ def getDailySummary():
     }
 
 
-@app.route("/devSummary", methods=['GET'])
+@app.route("/devSummary", methods=['POST'])
 def getdevSummary():
     userId = request.json["userId"]
     devSummary = storage.readDevSummary(userId)
     num_summary = request.json["n"]
+
     if not devSummary or devSummary[-1]["date"] != _get_today():
         # Get today's conversation
         conversations = storage.readConversation(userId)
@@ -192,8 +196,7 @@ def getdevSummary():
             # Skip the summary if we don't have any conversation data for today!
             pass
         else:
-            session = _get_session_or_create(userId)
-
+            summariser = build_summariser()
 
             # Get past summary
             pastSumm = ""
@@ -201,7 +204,7 @@ def getdevSummary():
                 pastSumm = devSummary[-1]["summary"]
 
             # Update the development summary
-            currentdevSummary = session.devSummary(pastSumm, currentConv)
+            currentdevSummary = summariser.devSummary(pastSumm, currentConv)
 
             devSummary.append({
                 "date": _get_today(),
@@ -224,7 +227,7 @@ def getIndicator():
     # TODO: implemenent the session indicato
 
     # if not indicator or indicator[-1]["date"] != _get_today():
-    #     session = _get_session_or_create(userId)
+    #     session = _get_chatsession_or_create(userId)
     #     currentindicator = session.indicator()
     #     indicator.append(currentindicator)
     #     storage.writeindicator(userId, indicator)
