@@ -16,8 +16,9 @@ if "messages" not in st.session_state:
 message = st.chat_message("assistant")
 try:
     message.write(welcome(obj = {"userId": 0})["response"])
-except Exception as e:
-    message.write(e)
+except:
+# except Exception as e:
+    # message.write(e)
     message.write("Apologies we seem to be having internal issues, We are trying to fix this currently. Thank you for your patience")
 
 # Display chat messages from history on app rerun
@@ -61,5 +62,5 @@ if prompt:
 
             # Add assistant response to chat history
             st.session_state.messages.append({"role": "assistant", "content": f'*{result}*'})
-    except:
-        print('') ## Need to add error log to server
+    except Exception as e:
+        print(e) ## Need to add error log to server
