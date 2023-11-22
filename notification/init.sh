@@ -16,7 +16,7 @@ gcloud storage buckets create gs://$BUCKET_NAME --project ${PROJECT} \
 
 #gcloud functions delete notification-function --gen2 --quiet --project $PROJECT --region=$FUNCTION_REGION
 
-sh $SCRIPT_DIR/deploy_frunction.sh
+sh $SCRIPT_DIR/deploy_function.sh
 
 #gcloud scheduler jobs delete daily_notification-job --quiet --project $PROJECT --location $SCHEDULER_REGION
 
