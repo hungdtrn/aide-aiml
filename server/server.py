@@ -71,7 +71,7 @@ def welcome():
     """
     userId = request.json["userId"]
     streaming = request.json.get("streaming", False)
-
+    print(streaming)
 
     session = _get_chatsession_or_create(userId)
     conversations = get_conversations(userId)

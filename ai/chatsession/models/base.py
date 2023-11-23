@@ -140,11 +140,11 @@ class BaseModel:
 
         chain = LLMChain(llm=self.model, prompt=prompt)
         out = chain(prompt_input)
-        print(out)
         return out
 
 
     def welcome(self, streaming=True):
+        print("In welcome", streaming)
         if not streaming:
             self.model.streaming = False
             self.model.callbacks = []

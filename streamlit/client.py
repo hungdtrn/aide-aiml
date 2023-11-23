@@ -34,7 +34,7 @@ def welcome(obj):
     """
     Welcome function used for for user starting a session
     """
-    return post("welcome", server_url, obj)
+    return post("welcome", server_url, obj, stream=True)
 
 def dailySummary(obj):
     """
