@@ -13,31 +13,38 @@ def set_url(url):
     server_url = url
 
 
-def post(path, server_url, obj):
+def post(path, server_url, obj, stream=False):
+    """
+    Funtion for POST requests. This function can also handle streaming requests.
+    When streaming, set stream == True
+    """
     headers = {'Content-type': 'application/json'}
-    response = requests.post(f"{server_url}/{path}", data=json.dumps(obj), headers=headers)
+    response = requests.post(f"{server_url}/{path}", data=json.dumps(obj), headers=headers, stream=stream)
     if not response.ok:
         print(response.text)
         raise Exception(f"Invalid response: {response.text}")
 
-    return json.loads(response.text)
+    # Return appropriate outputs depending on whether or not the response is streamed.
+    if stream:
+        return response.iter_content(None)
+    else:
+        return json.loads(response.text)
 
-def stream(path, obj):
-    # CODE FOR STREAMING REQUESTS. Use when we want to stream token by token instead of showing the whole sentence.
-    headers = {'Content-type': 'application/json'}
-    response = requests.post(f"{server_url}/{path}", data=json.dumps(obj), headers=headers, stream=True)
-    if not response.ok:
-        print(response.text)
-        raise Exception(f"Invalid response: {response.text}")
+# def stream(path, obj):
+#     # CODE FOR STREAMING REQUESTS. Use when we want to stream token by token instead of showing the whole sentence.
+#     headers = {'Content-type': 'application/json'}
+#     response = requests.post(f"{server_url}/{path}", data=json.dumps(obj), headers=headers, stream=True)
+#     if not response.ok:
+#         print(response.text)
+#         raise Exception(f"Invalid response: {response.text}")
 
-    return response.iter_content(None)
+#     return response.iter_content(None)
 
 def welcome(obj):
     """
     Welcome function used for for user starting a session
     """
     return post("welcome", server_url, obj)
-
 
 def dailySummary(obj):
     """
