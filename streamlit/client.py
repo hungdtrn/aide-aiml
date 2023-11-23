@@ -1,8 +1,8 @@
 import requests
 import json
 
-# server_url = "http://127.0.0.1:8080"
-server_url = "https://aide-server-ogdrzymura-km.a.run.app"
+server_url = "http://127.0.0.1:8080"
+# server_url = "https://aide-server-ogdrzymura-km.a.run.app"
 
 
 def set_url(url):
