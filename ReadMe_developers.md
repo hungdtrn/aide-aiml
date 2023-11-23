@@ -112,6 +112,29 @@ gcloud secrets add-iam-policy-binding OPENAI_API_KEY \
 gcloud secrets add-iam-policy-binding MAILGUN_API_KEY \
   --member="serviceAccount:${PROJECT_ID}-compute@developer.gserviceaccount.com \
   --role="roles/secretmanager.secretAccessor"
+
+gcloud iam service-accounts create ${SCHEDULER_SERVICE_ACCOUNT}
+
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+  --member="serviceAccount:${SCHEDULER_SERVICE_ACCOUNT}@${PROJECT}.iam.gserviceaccount.com" \
+  --role="roles/run.invoker" \
+  --role="roles/cloudscheduler.serviceAgent" \
+  --role="roles/storage.admin"
+
+gcloud storage buckets create gs://$BUCKET_NAME --project ${PROJECT} \
+    --location $FUNCTION_REGION --default-storage-class=STANDARD
+
+#gcloud scheduler jobs delete daily_notification-job --quiet --project $PROJECT --location $SCHEDULER_REGION
+
+gcloud scheduler jobs create http daily_notification-job \
+  --project $PROJECT \
+  --location $SCHEDULER_REGION \
+  --schedule "$SCHEDULE" \
+  --time-zone "Australia/Sydney" \
+  --uri "$SCHEDULED_DAILY_NOTIFICATION_URI" \
+  --http-method GET \
+  --message-body '{"name": "Scheduler"}' \
+  --oidc-service-account-email ${SCHEDULER_SERVICE_ACCOUNT}@${PROJECT}.iam.gserviceaccount.com
 ```
 
 ### Deploy application server to GCP and run
