@@ -1,8 +1,7 @@
 import streamlit as st
 import requests
 import json
-from utils import post, stream
-from client import welcome
+from client import welcome, post, chatStream
 # Page title
 st.title("AIDE")
 st.text("Patient page")
@@ -45,7 +44,7 @@ if prompt:
     try:
         # Display user message in chat message container
         st.chat_message("user").markdown(prompt)
-        out_stream = stream("chat_stream", {'userId': 0, 'message': prompt})
+        out_stream = chatStream({'userId': 0, 'message': prompt})
         #st.chat_message("user").write(prompt)
         with st.chat_message("assistant"):
         # Creating an empty array to store stream text

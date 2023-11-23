@@ -1,5 +1,4 @@
 import streamlit as st
-from utils import post
 from client import dailySummary, dailyIndicator
 import requests
 import json

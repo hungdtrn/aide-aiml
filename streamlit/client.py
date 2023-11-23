@@ -57,3 +57,9 @@ def dailyIndicator(obj):
     DailyIndicator function used for for user pulling through the medical indicators
     """
     return post("indicator", server_url, obj)
+
+def chatStream(obj):
+    """
+    chatStream function used for generating chats
+    """
+    return post("chat_stream", server_url, obj, stream=True)
