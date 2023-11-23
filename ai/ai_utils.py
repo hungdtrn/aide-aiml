@@ -18,8 +18,8 @@ def get_today():
 def get_now():
     return datetime.datetime.now().isoformat()
 
-def run_with_timeout_retry(chain, chain_input):
-    chain.llm.request_timeout = TIMEOUT
+def run_with_timeout_retry(chain, chain_input, timeout=TIMEOUT):
+    chain.llm.request_timeout = timeout
     for i in range(TIMEOUT_RETRY):
         try:
             return chain(chain_input)

@@ -89,7 +89,7 @@ Response format:
 ...
 """
 
-    WELCOME_MESSAGE_NEW_CONVERSATION = """<meta_instruction>. Begin the conversation by introducing yourself, conveying your eagerness to listen and assist, and initiate with a genuine two-sentence conversation starter on a randomly chosen topic from the suggestions provided, considering the context provided with the topic and the patient information. This is your first interaction with the patient; aim for authenticity and avoid repetition. Keep the conversation real, humorous, and in at most three sentences.
+    WELCOME_MESSAGE_NEW_CONVERSATION = """<meta_instruction>. Begin the conversation by introducing yourself, conveying your eagerness to listen and assist, and initiate with a genuine two-sentence conversation starter on a randomly chosen topic from the suggestions provided, considering the context provided with the topic and the patient information. This is your first interaction with the patient; aim for authenticity and avoid repetition. Keep the conversation friendly and humorous within a limit of three sentences.
 
 Patient information:
 {patient_info}
@@ -100,7 +100,7 @@ Suggested Topics:
 <ai_prefix>:
 """
 
-    WELCOME_MESSAGE_CONTINUE_CONVERSATION = """<meta_instruction>. Since you've already had a conversation today, welcome the patient back, reintroduce yourself, and initiate with a genuine two-sentence conversation starter on a randomly chosen topic from the suggestions provided, considering the context provided with the topic and the patient information. Take into account the context provided with the topic and the patient information. Ensure to reintroduce yourself before initiating the conversation. Keep the conversation real, humorous, and in at most three sentences.
+    WELCOME_MESSAGE_CONTINUE_CONVERSATION = """<meta_instruction>. Since you've already had a conversation today, welcome the patient back, reintroduce yourself, and initiate with a genuine two-sentence conversation starter on a randomly chosen topic from the suggestions provided, considering the context provided with the topic and the patient information. Take into account the context provided with the topic and the patient information. Ensure to reintroduce yourself before initiating the conversation. Keep the conversation friendly and humorous within a limit of three sentences.
 
 Patient information:
 {patient_info}
@@ -133,7 +133,7 @@ Current conversation:
 <human_prefix>: {input}
 <ai_prefix>:"""   
 
-    DAILY_SUMMARY =  """<meta_instruction>. This is a conversation between you and the patient. Summarize the patient's emotional, mental, and physical state throughout the day. Use this summary to monitor and track the patient's overall well-being.
+    DAILY_SUMMARY =  """<meta_instruction>. This is a conversation between you and the patient. Summarize the patient's emotional, mental, social, and physical state throughout the day. Use this summary to monitor and track the patient's overall well-being.
 
 {new_lines}
 """    
@@ -160,4 +160,24 @@ New lines of conversation:
 {new_lines}
 
 New summary:
+"""
+
+    INDICATOR = """As Elderly Care Assistant, your primary responsibility is to evaluate the well-being of the patient using the information provided in the summary of the day. Based on today's well-being summary, assess the mental, physical, and social health on a scale of 0 to 5. Generate the JSON in the provided response format.
+
+    Today's summary:
+    {summary}
+
+    Response format:
+    {{
+        "mental": mental_score,
+        "physical": physical_score,
+        "social": social_score
+    }}
+
+    Examples:
+    {{
+        "mental": 5,
+        "physical": 5,
+        "social": 3,
+    }}
 """

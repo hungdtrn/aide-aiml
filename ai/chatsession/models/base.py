@@ -96,7 +96,7 @@ class BaseModel:
             llm=self.model,
             memory=self.memory
         )
-        return run_with_timeout_retry(chain, message)
+        return run_with_timeout_retry(chain, message, timeout=20)
 
 
     def _welcome(self):
@@ -122,7 +122,7 @@ class BaseModel:
             }
 
         chain = LLMChain(llm=self.model, prompt=prompt)
-        out = run_with_timeout_retry(chain, prompt_input)
+        out = run_with_timeout_retry(chain, prompt_input, timeout=30)
         return out
 
 
