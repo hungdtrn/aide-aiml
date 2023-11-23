@@ -315,7 +315,7 @@ def process_data_for_demo():
         
         # prepare_topic 
         print("3. Let AI preparing topics for initialising the personalised converssation with the patient")
-        print("For the first runnning of the day, it might take a while to run...")
+        print("For the first running of the day, it might take a while to run...")
         print("This feature will be called once a day!")
         prepare_topic(userId, get_today())
 
