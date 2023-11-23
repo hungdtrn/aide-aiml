@@ -26,22 +26,22 @@ def streaming(output_stream):
 #building out chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
-
-# Display chat messages from history on app rerun
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+    st.session_state.welcomed = False
+    
+    
 
 #Initialise the chat session in the server and get the display message
-try:
-    welcome_stream = welcome(obj = {"userId": 0, "streaming": True})
-    streaming(welcome_stream)
-except Exception as e:
-    print(e)
-# except Exception as e:
-    # message.write(e)
-    # message = st.chat_message("assistant")
-    # message.write("Apologies we seem to be having internal issues, We are trying to fix this currently. Thank you for your patience")
+if "welcomed" not in st.session_state or not st.session_state.welcomed:
+    try:
+        welcome_stream = welcome(obj = {"userId": 0, "streaming": True})
+        st.session_state.welcomed = True
+        streaming(welcome_stream)
+    except Exception as e:
+        print(e)
+    # except Exception as e:
+        # message.write(e)
+        # message = st.chat_message("assistant")
+        # message.write("Apologies we seem to be having internal issues, We are trying to fix this currently. Thank you for your patience")
 
 
 # Streaming the chat
