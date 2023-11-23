@@ -51,7 +51,7 @@ def insights_from_description(userId, conversation_prompter=None):
             user["ai_details"].append(newDetails)
         storage.updateUser(userId, user)
     
-    return user["ai_details"]
+    return user["ai_details"][-1]["details"][0]
 
 def get_conversations(userId):
     conversations = storage.readConversation(userId)

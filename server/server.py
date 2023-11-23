@@ -51,7 +51,7 @@ def _get_chatsession_or_create(userId):
                                                      patient_info=patient_description,
                                                      topics=topics)
         return chatSessionDict[userId]
-
+    
 
 def _userDailySummary(userId):
     dailySummary = storage.readDailySummary(userId)
@@ -97,7 +97,6 @@ def welcome():
     """
     userId = request.json["userId"]
     streaming = request.json.get("streaming", False)
-    print(streaming)
 
     session = _get_chatsession_or_create(userId)
     conversations = get_conversations(userId)
@@ -135,40 +134,7 @@ def welcome():
 def chat():
     """ Chat with the language model
     """
-
-    # Get the chat session
-    userId = request.json["userId"]
-    session = _get_chatsession_or_create(userId)
-
-    # Get the conversation history
-    conversations = get_conversations(userId)
-
-    message = request.json["message"]
-
-    # Update the conversation history with the human's message
-    conversations[-1]["conversation"].append({
-        "time": get_now(),
-        "content": {session.human_prefix: message,},
-        "tokenCnt": 0,
-    })
-
-    response = session.chat(message)
-    conversations[-1]["conversation"].append({
-        "time": get_now(),
-        "content": {session.ai_prefix: response,},
-        "tokenCnt": 0,
-    })
-
-    storage.writeConversation(userId, conversations)
-
-    return {
-        "response": response
-    }
-
-@app.route("/chat_stream", methods=['POST'])
-def chat_stream():
-    """ Chat with the language model
-    """
+    streaming = request.json.get("streaming", False)
 
     # Get the chat session
     userId = request.json["userId"]
@@ -188,23 +154,38 @@ def chat_stream():
     # Get the details AI extracted from the carer and medical inputs
     userDetails = insights_from_description(userId)
 
-    response_gen = session.chat(message, streaming=True)
-    def generate():
-        msg = ""
-        for word in response_gen:
-            msg += word
-            yield word
-        msg.strip()
+    if streaming:
+        response_gen = session.chat(message, streaming=True)
+        def generate():
+            msg = ""
+            for word in response_gen:
+                msg += word
+                yield word
+            msg.strip()
+            conversations[-1]["conversation"].append({
+                "time": get_now(),
+                "content": {session.ai_prefix: msg,},
+                "tokenCnt": 0,
+            })
+            storage.writeConversation(userId, conversations)
+            yield ""
+
+        response = app.response_class(generate(), mimetype='text/text')
+        return response
+    else:
+        response = session.chat(message)
         conversations[-1]["conversation"].append({
             "time": get_now(),
-            "content": {session.ai_prefix: msg,},
+            "content": {session.ai_prefix: response,},
             "tokenCnt": 0,
         })
-        storage.writeConversation(userId, conversations)
-        yield ""
 
-    response = app.response_class(generate(), mimetype='text/text')
-    return response
+        storage.writeConversation(userId, conversations)
+
+        return {
+            "response": response
+        }
+
 
 @app.route("/scheduledDailySummary", methods=['GET'])
 def scheduledDailySummary():

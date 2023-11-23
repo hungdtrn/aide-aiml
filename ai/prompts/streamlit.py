@@ -114,13 +114,32 @@ Previous conversations:
 <ai_prefix>:
 """
 
-    CHAT = """The following is a friendly conversation between a human and an AI Assistant. The AI is friendly and supportive to the human. The AI's responses should prioritize the well-being of the human and avoid saying anything harmful.
+    # Currently the ConversationChain does not allow for custom variable. Implement some workaroud
+    CHAT_HEAD = """Today is {today}. <meta_instruction>. Maintain the conversation with empathy, helpfulness, and a touch of humor, taking into consideration the patient's information and the provided context. This is a conversation, keep the dialogue short. 
+    
+Patient information:
+{patient_info}
 
+Suggested Topics:
+{suggested_topics}
+
+Additional context:
+{retrive_context}"""
+
+    CHAT_BODY = """
 Current conversation:
 {history}
 
 <human_prefix>: {input}
 <ai_prefix>:"""   
+
+    CHAT = """The following is a friendly conversation between a human and an AI Assistant. The AI is friendly and supportive to the human. The AI's responses should prioritize the well-being of the human and avoid saying anything harmful.
+
+    Current conversation:
+    {history}
+
+    <human_prefix>: {input}
+    <ai_prefix>:""" 
 
     DAILY_SUMMARY =  """This is a conversation between a patient and an AI Assistant. Summarize the patient's emotional state. This summary will be used to assess the patient's mental health.
 

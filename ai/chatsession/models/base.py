@@ -57,7 +57,7 @@ class BaseModel:
     human_prefix = ""
     ai_prefix = ""
     model = None
-    NUM_SHORT_TERM_CONVERSATION = 10
+    NUM_SHORT_TERM_CONVERSATION = 5
 
     def __init__(self, conversations, patient_info, topics) -> None:
         load_dotenv()
@@ -96,30 +96,32 @@ class BaseModel:
         retrieved_messages = messages_from_dict(out)
         retrieved_chat_history = ChatMessageHistory(messages=retrieved_messages)
         return retrieved_chat_history
-
-    def _conversation_to_string(self, conversation):
-        """ Convert the converstation dicct list to covnersation string list
-        """
-        out = ""
-        for line in conversation:
-            for k, v in line["content"].items():
-                out += "{}: {}\n".format(k, v)
-        return out
-
-
+    
     def _chat(self, message, **kwargs):
         # Get the prompt templates based on (1) the device and (2) the client
-        prompt_template = self.prompt_templates.get_prompt_template(self.prompt_templates.CHAT,
+        template_head = self.prompt_templates.get_prompt_template(self.prompt_templates.CHAT_HEAD,
                                                   human_prefix=self.human_prefix, ai_prefix=self.ai_prefix)
+        template_body = self.prompt_templates.get_prompt_template(self.prompt_templates.CHAT_BODY,
+                                                                  human_prefix=self.human_prefix, ai_prefix=self.ai_prefix)
+        template_head = template_head.format(
+            patient_info=self.patient_info,
+            retrive_context="",
+            suggested_topics=self.topics,
+            today=get_today(),
+        )
 
-        prompt = PromptTemplate.from_template(prompt_template)
+        template = template_head + template_body
+
+        prompt = PromptTemplate.from_template(template)
+        print(prompt)
         chain = ConversationChain(
             prompt=prompt,
             llm=self.model,
             memory=self.memory
         )
         return chain(message)
-    
+
+
     def _welcome(self):
         if self.conversations and self.conversations[-1]["date"] == get_today() and self.conversations[-1]["conversation"]:
             # Welcome back message
@@ -129,7 +131,7 @@ class BaseModel:
             prompt_input = {
                 "patient_info": self.patient_info,
                 "topics": self.topics,
-                "conversation":  self._conversation_to_string(self.conversations[-1]["conversation"])
+                "conversation":  self.memory.buffer_as_str,
             }
         else:
             print("starting a new")
@@ -141,8 +143,7 @@ class BaseModel:
                 "patient_info": self.patient_info,
                 "topics": self.topics,
             }
-
-        print(prompt, prompt_input)
+        print(prompt_input, prompt)
         chain = LLMChain(llm=self.model, prompt=prompt)
         out = chain(prompt_input)
         return out
