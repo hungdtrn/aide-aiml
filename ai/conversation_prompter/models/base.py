@@ -56,7 +56,7 @@ class BaseModel:
         return self._convert_insights_to_list(patient_info)
 
     def insights_from_conversation(self, conversation):
-        conversation = self.conversation_to_string(conversation)
+        conversation = conversation_to_string(conversation)
         conversation_info_template = self.prompt_templates.get_prompt_template(self.prompt_templates.CONVERSATION_INFO_EXTRACTION,
                                                                             human_prefix=self.human_prefix,
                                                                             ai_prefix=self.ai_prefix)
