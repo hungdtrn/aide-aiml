@@ -6,6 +6,7 @@ import json
 from flask import Flask, jsonify, request, render_template, Response
 
 import storage
+from send_email import send_email_notification
 from utils import get_now, get_today, insights_from_description, get_conversations, process_data_for_demo, prepare_topic
 from ai import VERSION, MODELS, build_chat_session, build_summariser, build_conversation_prompter
 
@@ -205,13 +206,18 @@ def chat_stream():
     response = app.response_class(generate(), mimetype='text/text')
     return response
 
-@app.route("/scheduledDailySummary", methods=['POST'])
+@app.route("/scheduledDailySummary", methods=['GET'])
 def scheduledDailySummary():
     """ Invoked by Daily CRON scheduler
         Get the summary of today and the past n-1 days for all users
     """
     for userId in storage.yesterdaysUsers():
-        _userDailySummary(userId)
+        summary = _userDailySummary(userId)
+        """
+            if summary.value > exceeds threshold 
+                send_email_notification(None, summary)
+        """
+    return "Success"
 
 @app.route("/dailySummary", methods=['POST'])
 def getDailySummary():
