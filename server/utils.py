@@ -5,13 +5,12 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 import datetime
 import storage
 import numpy as np
-
+import time
 from ai import VERSION, MODELS, build_chat_session, build_summariser, build_conversation_prompter, get_today, get_now
 AI_MODEL = MODELS.CHATGPT
 
 
-
-def insights_from_description(userId):
+def insights_from_description(userId, conversation_prompter=None):
     user = storage.readUser(userId)
     if not user:
         user = {"userId": userId, 
@@ -39,7 +38,9 @@ def insights_from_description(userId):
 
     lastCarerInput, lastMedicalInput = carerInputs[-1], medicalInputs[-1]
     if not user.get("ai_details", []) or user["ai_details"][-1]["id"] != [lastCarerInput["id"], lastMedicalInput["id"]]:
-        conversation_prompter = build_conversation_prompter(AI_MODEL)
+        if not conversation_prompter:
+            conversation_prompter = build_conversation_prompter(AI_MODEL)
+
         newDetails = {
             "id": (lastCarerInput["id"], lastMedicalInput["id"]),
             "details": conversation_prompter.insights_from_description(lastCarerInput["details"], lastMedicalInput["details"]),
@@ -74,17 +75,19 @@ def save_summary(userId):
 #     conversation_prompter = build_conversation_prompter(AI_MODEL)
 #     return conversation_prompter.extractFromConversation(conversation)
 
-def _insights_from_description(conversation):
-    conversation_prompter = build_conversation_prompter(AI_MODEL)
+def _insights_from_description(conversation, conversation_prompter=None):
+    if not conversation_prompter:
+        conversation_prompter = build_conversation_prompter(AI_MODEL)
+    
     information = conversation_prompter.insights_from_conversation(conversation)
     return information
 
-def insights_from_conversation(conversation_dict, cached=True):
-    if conversation_dict["information"] and cached:
+def insights_from_conversation(conversation_dict, cached=True, conversation_prompter=None):
+    if conversation_dict.get("information", []) and cached:
         print("Using cached information")
         return conversation_dict
 
-    conversation_dict["information"] = _insights_from_description(conversation_dict["conversation"])
+    conversation_dict["information"] = _insights_from_description(conversation_dict["conversation"], conversation_prompter)
     return conversation_dict
 
 def prepare_topic(userId, date, cached=True):
@@ -154,7 +157,6 @@ def prepare_topic(userId, date, cached=True):
     is_new = True
 
     for i in range(len(conversations)):
-        print(conversations[i]["date"])
         if conversations[i]["date"] == date:
             last_conv = conversations[i-n_prev_conv:i]
             next_conv = conversations[i]
@@ -173,18 +175,21 @@ def prepare_topic(userId, date, cached=True):
             print("No date specified")
             return ""
 
-    if cached and next_conv["topicSuggestions"]:
+    if cached and next_conv.get("topicSuggestions", []):
         print("Using cached topic suggestions")
         return next_conv["topicSuggestions"]
 
-    convs = [insights_from_conversation(conversation) for conversation in random_conv]
-    convs.extend([insights_from_conversation(conversation) for conversation in last_conv])
+    conversation_prompter = build_conversation_prompter(AI_MODEL)
+    print("----- Extracting insights from previous conversations -------")
+    convs = [insights_from_conversation(conversation, conversation_prompter=conversation_prompter) for conversation in random_conv]
+    convs.extend([insights_from_conversation(conversation, conversation_prompter=conversation_prompter) for conversation in last_conv])
 
     storage.writeConversation(userId, raw_conversations)
 
-    patient_info = insights_from_description(userId)
+    patient_info = insights_from_description(userId, conversation_prompter=conversation_prompter)
+    time.sleep(3)
 
-    conversation_prompter = build_conversation_prompter(AI_MODEL)
+    print("------- Thinking of the topics ---------")
     suggested_topics = conversation_prompter.topic_suggestions(patient_info, convs)
     next_conv["topicSuggestions"] = suggested_topics
     if is_new:
@@ -223,12 +228,15 @@ def process_data_for_demo():
 
     for userId in [0]:
         # Patch conversation
-        print("Patching the conversation data to the new format")
+        print("1. Patching the conversation data to the new format")
         _patch_conversation(userId)
 
-        print("Extract insights from the medical and carer inputs")
+        print("2. Extract insights from the medical and carer inputs")
         insights_from_description(userId)
+        time.sleep(3)
         
         # prepare_topic 
-        print("Let AI preparing topics for initialising the personalised converssation with the patient")
+        print("3. Let AI preparing topics for initialising the personalised converssation with the patient")
+        print("For the first runnning of the day, it might take a while to run...")
+        print("This feature will be called once a day!")
         prepare_topic(userId, get_today())
