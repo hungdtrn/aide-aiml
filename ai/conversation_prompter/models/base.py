@@ -2,22 +2,20 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-import time
 from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
-from langchain.chains import ConversationChain, LLMChain
+from langchain.chains import LLMChain
 from langchain.memory.chat_message_histories.in_memory import ChatMessageHistory
 from langchain.chains.conversation.memory import ConversationBufferMemory
-from langchain.schema import (
-    LLMResult,
-    messages_from_dict, messages_to_dict
-)
+
 # from langchain.callbacks.streaming_stdout import BaseCallbackHandler
 from langchain.callbacks.base import BaseCallbackHandler
 from queue import Queue
 from threading import Event, Thread
 from typing import Any, Generator, Union
 from prompts import get_template
+
+from ai_utils import run_with_timeout_retry
 
 class BaseModel:
     human_prefix = ""
@@ -55,8 +53,6 @@ class BaseModel:
                 out += "{}: {}\n".format(k, v)
         return out
 
-    
-
     def insights_from_description(self, medicalInput, carerInput):
         patient_info_template = self.prompt_templates.get_prompt_template(self.prompt_templates.PATIENT_INFO_EXTRACTION,
                                                                 human_prefix=self.human_prefix,
@@ -64,7 +60,7 @@ class BaseModel:
         patient_info_prompt = PromptTemplate(input_variables=["patient_description"],
                                              template=patient_info_template)
         patient_info_chain = LLMChain(llm=self.model, prompt=patient_info_prompt)
-        patient_info = patient_info_chain({"patient_description": f"{medicalInput}\n\n{carerInput}"})["text"]
+        patient_info = run_with_timeout_retry(patient_info_chain, {"patient_description": f"{medicalInput}\n\n{carerInput}"})["text"]
         return self._convert_insights_to_list(patient_info)
 
     def insights_from_conversation(self, conversation):
@@ -75,7 +71,7 @@ class BaseModel:
         conversation_info_prompt = PromptTemplate(input_variables=["conversation"],
                                                 template=conversation_info_template)
         conversation_info_chain = LLMChain(llm=self.model, prompt=conversation_info_prompt)
-        conversation_info = conversation_info_chain({"conversation": conversation})["text"]
+        conversation_info = run_with_timeout_retry(conversation_info_chain, {"conversation": conversation})["text"]
         return self._convert_insights_to_list(conversation_info)
 
 
@@ -89,8 +85,8 @@ class BaseModel:
             topic_suggestion_prompt = PromptTemplate(input_variables=["patient_info", "n_topics"],
                                                     template=topic_suggestion_template)
             topic_suggestion_chain = LLMChain(llm=self.model, prompt=topic_suggestion_prompt)
-            topic_suggestion = topic_suggestion_chain({"patient_info": patient_info,
-                                                       "n_topics": self.n_topics})["text"]
+            input_dict = {"patient_info": patient_info,
+                                                       "n_topics": self.n_topics}
         else:
             topic_suggestion_template = self.prompt_templates.get_prompt_template(self.prompt_templates.TOPIC_SUGGESTION_WITH_CONVERSATION,
                                                                                         human_prefix=self.human_prefix,
@@ -98,8 +94,10 @@ class BaseModel:
             topic_suggestion_prompt = PromptTemplate(input_variables=["patient_info", "previous_insight", "n_topics"],
                                                     template=topic_suggestion_template)
             topic_suggestion_chain = LLMChain(llm=self.model, prompt=topic_suggestion_prompt)
-            topic_suggestion = topic_suggestion_chain({"patient_info": patient_info,
+            input_dict = {"patient_info": patient_info,
                                                        "previous_insight": conv_info,
-                                                       "n_topics": self.n_topics})["text"]
+                                                       "n_topics": self.n_topics}
+
+        topic_suggestion = run_with_timeout_retry(topic_suggestion_chain, input_dict)["text"]
         print(topic_suggestion)
         return topic_suggestion

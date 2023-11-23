@@ -187,7 +187,6 @@ def prepare_topic(userId, date, cached=True):
     storage.writeConversation(userId, raw_conversations)
 
     patient_info = insights_from_description(userId, conversation_prompter=conversation_prompter)
-    time.sleep(3)
 
     print("------- Thinking of the topics ---------")
     suggested_topics = conversation_prompter.topic_suggestions(patient_info, convs)

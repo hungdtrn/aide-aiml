@@ -18,7 +18,7 @@ from queue import Queue
 from threading import Event, Thread
 from typing import Any, Generator, Union
 from prompts import get_template
-from ai_utils import get_today
+from ai_utils import get_today, run_with_timeout_retry
 
 
 class StreamingGeneratorCallbackHandler(BaseCallbackHandler):
@@ -119,7 +119,7 @@ class BaseModel:
             llm=self.model,
             memory=self.memory
         )
-        return chain(message)
+        return run_with_timeout_retry(chain, message)
 
 
     def _welcome(self):
@@ -143,9 +143,9 @@ class BaseModel:
                 "patient_info": self.patient_info,
                 "topics": self.topics,
             }
-        print(prompt_input, prompt)
+
         chain = LLMChain(llm=self.model, prompt=prompt)
-        out = chain(prompt_input)
+        out = run_with_timeout_retry(chain, prompt_input)
         return out
 
 
