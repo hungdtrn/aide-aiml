@@ -51,6 +51,31 @@ def _get_chatsession_or_create(userId):
                                                      topics=topics)
         return chatSessionDict[userId]
 
+
+def _userDailySummary(userId):
+    dailySummary = storage.readDailySummary(userId)
+    num_summary = request.json["n"]
+    if not dailySummary or dailySummary[-1]["date"] != get_today():
+        # Get today's conversation
+        conversations = storage.readConversation(userId)
+        if not conversations or conversations[-1]["date"] != get_today():
+            # Skip the summary if we don't have any conversation data for today!
+            pass
+        else:
+            summariser = build_summariser(AI_MODEL)
+            currentDailySummary = summariser.dailySummary(conversations[-1]["conversation"])
+            dailySummary.append({
+                "date": get_today(),
+                "summary": currentDailySummary,
+                "tokenCnt": 0,
+                "aiVersion": VERSION,
+            })
+            storage.writeDailySummary(userId, dailySummary)
+
+    return {
+        "response": dailySummary[-num_summary:]
+    }
+
 @app.route('/')
 def test():
     return "Success"
@@ -180,35 +205,20 @@ def chat_stream():
     response = app.response_class(generate(), mimetype='text/text')
     return response
 
+@app.route("/scheduledDailySummary", methods=['POST'])
+def scheduledDailySummary():
+    """ Invoked by Daily CRON scheduler
+        Get the summary of today and the past n-1 days for all users
+    """
+    for userId in storage.yesterdaysUsers():
+        _userDailySummary(userId)
 
 @app.route("/dailySummary", methods=['POST'])
 def getDailySummary():
     """ Get the summary of today and the past n-1 days
     """
     userId = request.json["userId"]
-    dailySummary = storage.readDailySummary(userId)
-    num_summary = request.json["n"]
-    if not dailySummary or dailySummary[-1]["date"] != get_today():
-        # Get today's conversation
-        conversations = storage.readConversation(userId)
-        if not conversations or conversations[-1]["date"] != get_today():
-            # Skip the summary if we don't have any conversation data for today!
-            pass
-        else:
-            summariser = build_summariser(AI_MODEL)
-            currentDailySummary = summariser.dailySummary(conversations[-1]["conversation"])
-            dailySummary.append({
-                "date": get_today(),
-                "summary": currentDailySummary,
-                "tokenCnt": 0,
-                "aiVersion": VERSION,
-            })
-            storage.writeDailySummary(userId, dailySummary)
-
-    return {
-        "response": dailySummary[-num_summary:]
-    }
-
+    return _userDailySummary(userId)
 
 @app.route("/devSummary", methods=['POST'])
 def getdevSummary():

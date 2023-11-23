@@ -44,6 +44,16 @@ def download(destination_blob_name):
 
     return output
 
+def yesterdaysUsers():
+    if USE_BUCKET:
+        userIds=[]
+        for blob in bucket().list_blobs(prefix='history'):
+            yesterday = date.today() - timedelta(days = 1)
+            if str(blob.updated).split(' ')[0] == yesterday.strftime('%Y-%m-%d'):
+                userIds.append(blob.name.split("/")[1].split(".")[0])
+        return userIds
+    else:
+        raise NotImplementedError("TODO")
 
 def writeUser(userId, user):
     upload(f"user/{userId}.json", json.dumps(user, indent=2))
