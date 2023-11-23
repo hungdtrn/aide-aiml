@@ -1,6 +1,6 @@
 import json
 import os
-import datetime
+from datetime import date, timedelta
 from google.cloud import storage
 
 # Only use GCS bucket when BUCKET_NAME is defined, otherwise use local storage

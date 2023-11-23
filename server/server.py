@@ -205,13 +205,14 @@ def chat_stream():
     response = app.response_class(generate(), mimetype='text/text')
     return response
 
-@app.route("/scheduledDailySummary", methods=['POST'])
+@app.route("/scheduledDailySummary", methods=['GET'])
 def scheduledDailySummary():
     """ Invoked by Daily CRON scheduler
         Get the summary of today and the past n-1 days for all users
     """
     for userId in storage.yesterdaysUsers():
         _userDailySummary(userId)
+    return "Success"
 
 @app.route("/dailySummary", methods=['POST'])
 def getDailySummary():
