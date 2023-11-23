@@ -75,6 +75,7 @@ if st.checkbox('View Indicator Trends', disabled = checkbox_disabled):
         #--- Indicator trends---#
         st.header("Indicator Trends")
 
+
         df_indicators = pd.DataFrame.from_dict(indicator['response'])
         df_indicators[['mental_health','physical_health','social_health']] = df_indicators['indicators'].apply(pd.Series)
 
