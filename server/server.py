@@ -6,8 +6,8 @@ import json
 from flask import Flask, jsonify, request, render_template, Response
 
 import storage
-from utils import get_now, get_today, get_ai_extracted_user_details
-from ai import VERSION, MODELS, build_chat_session, build_summariser, build_feat_extractor
+from utils import get_now, get_today, insights_from_description, get_today_conversation
+from ai import VERSION, MODELS, build_chat_session, build_summariser, build_conversation_prompter
 
 AI_MODEL = MODELS.CHATGPT
 app = Flask(__name__)
@@ -66,19 +66,12 @@ def welcome():
     """
     userId = request.json["userId"]
     session = _get_chatsession_or_create(userId)
-    conversations = storage.readConversation(userId)
-    if len(conversations)==0 or conversations[-1]["date"] != get_today():
-        conversations.append({
-            "date": get_today(),
-            "conversation": [],
-            "version": VERSION,
-            "tokeCnt": 0,
-        })
+    conversations = get_today_conversation(userId)
 
     response = session.welcome()
     conversations[-1]["conversation"].append({
         "time": get_now(),
-        session.ai_prefix: response,
+        "content": {session.ai_prefix: response,},
         "tokenCnt": 0,
     })
     storage.writeConversation(userId, conversations)
@@ -97,33 +90,21 @@ def chat():
     session = _get_chatsession_or_create(userId)
 
     # Get the conversation history
-    conversations = storage.readConversation(userId)
-
-    # Check if the conversation of today is created. 
-    # If the today's conversation is not created, create it.
-    if not conversations or conversations[-1]["date"] != get_today():
-        conversations.append({
-            "date": get_today(),
-            "conversation": [],
-            "version": VERSION,
-            "tokeCnt": 0,
-        })
+    conversations = get_today_conversation(userId)
 
     message = request.json["message"]
 
     # Update the conversation history with the human's message
     conversations[-1]["conversation"].append({
         "time": get_now(),
-        session.human_prefix: message,
+        "content": {session.human_prefix: message,},
         "tokenCnt": 0,
     })
 
-        
-    
     response = session.chat(message)
     conversations[-1]["conversation"].append({
         "time": get_now(),
-        session.ai_prefix: response,
+        "content": {session.ai_prefix: response,},
         "tokenCnt": 0,
     })
 
@@ -143,23 +124,18 @@ def chat_stream():
     session = _get_chatsession_or_create(userId)
     message = request.json["message"]
 
-    conversations = storage.readConversation(userId)
-    if not conversations or conversations[-1]["date"] != get_today():
-        conversations.append({
-            "date": get_today(),
-            "conversation": [],
-            "version": VERSION,
-            "tokeCnt": 0,
-        })
+    # Get the conversation history
+    conversations = get_today_conversation(userId)
 
+    # Store the message of the human
     conversations[-1]["conversation"].append({
         "time": get_now(),
-        session.human_prefix: message,
+        "content": {session.human_prefix: message,},
         "tokenCnt": 0,
     })
 
     # Get the details AI extracted from the carer and medical inputs
-    userDetails = get_ai_extracted_user_details(userId)
+    userDetails = insights_from_description(userId)
 
     response_gen = session.chat(message, streaming=True)
     def generate():
@@ -170,7 +146,7 @@ def chat_stream():
         msg.strip()
         conversations[-1]["conversation"].append({
             "time": get_now(),
-            session.ai_prefix: msg,
+            "content": {session.ai_prefix: msg,},
             "tokenCnt": 0,
         })
         storage.writeConversation(userId, conversations)

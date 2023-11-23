@@ -4,8 +4,9 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
 import datetime
 import storage
+import numpy as np
 
-from ai import VERSION, MODELS, build_chat_session, build_summariser, build_feat_extractor
+from ai import VERSION, MODELS, build_chat_session, build_summariser, build_conversation_prompter
 AI_MODEL = MODELS.CHATGPT
 
 def get_today():
@@ -14,8 +15,7 @@ def get_today():
 def get_now():
     return datetime.datetime.now().isoformat()
 
-
-def get_ai_extracted_user_details(userId):
+def insights_from_description(userId):
     user = storage.readUser(userId)
     if not user:
         user = {"userId": userId, 
@@ -43,10 +43,10 @@ def get_ai_extracted_user_details(userId):
 
     lastCarerInput, lastMedicalInput = carerInputs[-1], medicalInputs[-1]
     if not user.get("ai_details", []) or user["ai_details"][-1]["id"] != [lastCarerInput["id"], lastMedicalInput["id"]]:
-        feat_extractor = build_feat_extractor(AI_MODEL)
+        conversation_prompter = build_conversation_prompter(AI_MODEL)
         newDetails = {
             "id": (lastCarerInput["id"], lastMedicalInput["id"]),
-            "details": feat_extractor.extractFromDescription(lastCarerInput["details"], lastMedicalInput["details"]),
+            "details": conversation_prompter.insights_from_description(lastCarerInput["details"], lastMedicalInput["details"]),
         }
         if not user.get("ai_details", []):
             user["ai_details"] = [newDetails]
@@ -56,6 +56,94 @@ def get_ai_extracted_user_details(userId):
     
     return user["ai_details"]
 
-def get_details_from_conversation(conversation):
-    feat_extractor = build_feat_extractor(AI_MODEL)
-    return feat_extractor.extractFromConversation(conversation)
+def get_today_conversation(userId):
+    conversations = storage.readConversation(userId)
+    if len(conversations)==0 or conversations[-1]["date"] != get_today():
+        conversations.append({
+            "date": get_today(),
+            "conversation": [],
+            "version": VERSION,
+            "tokeCnt": 0,
+        })
+    return conversations
+
+
+# def get_details_from_last_conversation(conversations):
+#     if len(conversations) <= 1:
+#         return []
+
+#     conversation = conversations[-2]
+#     conversation_prompter = build_conversation_prompter(AI_MODEL)
+#     return conversation_prompter.extractFromConversation(conversation)
+
+def _insights_from_description(conversation):
+    conversation_prompter = build_conversation_prompter(AI_MODEL)
+    information = conversation_prompter.insights_from_conversation(conversation)
+    return information
+
+def insights_from_conversation(conversation_dict, cached=True):
+    if conversation_dict["information"] and cached:
+        print("Using cached information")
+        return conversation_dict["information"]
+
+    conversation_dict["information"] = _insights_from_description(conversation_dict["conversation"])
+    return conversation_dict
+
+def prepare_topic(userId, date, cached=True):
+    """ Preparing the topic for the next conversations and save it to the database
+
+    This involves multiple steps:
+    1. Get the last n_prev_conv conversations
+    2. Get n_random_conv random conversations from the past
+    3. Get the extracted information from these conversations
+    4. Generate the topic suggestions
+    5. Save the topic suggestions to the database
+    
+    OPTIONALS:
+    6. Query the relevant contexts for each topics
+    """
+    n_prev_conv = 4
+    n_random_conv = 3
+
+    conversations = storage.readConversation(userId)
+    if len(conversations) == 0:
+        return []
+
+    last_conv = conversations[-n_prev_conv:]
+    random_conv = np.random.choice(conversations[:n_prev_conv], n_random_conv)
+    next_conv = {
+        "date": date,
+        "conversation": [],
+        "version": VERSION,
+        "tokeCnt": 0,
+        "topicSuggestions": [], "information": []
+    }
+    is_new = True
+
+    for i in range(conversations):
+        if conversations[i]["date"] == date:
+            last_conv = conversations[i-n_prev_conv:i]
+            next_conv = conversations[i]
+            random_conv = np.random.choice(conversations[:i-n_prev_conv], n_random_conv)
+            is_new = False
+
+    if cached and next_conv["topicSuggestions"]:
+        print("Using cached topic suggestions")
+        return next_conv["topicSuggestions"]
+
+    convs = [insights_from_conversation(conversation) for conversation in random_conv]
+    convs.extend([insights_from_conversation(conversation) for conversation in last_conv])
+
+    storage.writeConversation(userId, conversations)
+
+
+    patient_info = insights_from_description(userId)
+    conversation_prompter = build_conversation_prompter(AI_MODEL)
+    conversation_prompter.topic_suggestions(patient_info, convs)
+
+
+    
+
+    # conversation = conversations[-2]
+    # summariser = build_summariser(AI_MODEL)
+    # return summariser.summarise(conversation)
