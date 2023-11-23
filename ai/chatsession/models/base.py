@@ -6,11 +6,9 @@ import time
 from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
 from langchain.chains import ConversationChain, LLMChain
-from langchain.memory.chat_message_histories.in_memory import ChatMessageHistory
 from langchain.chains.conversation.memory import ConversationBufferMemory, ConversationBufferWindowMemory
 from langchain.schema import (
     LLMResult,
-    messages_from_dict, messages_to_dict
 )
 # from langchain.callbacks.streaming_stdout import BaseCallbackHandler
 from langchain.callbacks.base import BaseCallbackHandler
@@ -18,7 +16,7 @@ from queue import Queue
 from threading import Event, Thread
 from typing import Any, Generator, Union
 from prompts import get_template
-from ai_utils import get_today, run_with_timeout_retry
+from ai_utils import get_today, run_with_timeout_retry, loadAllConversationsToMemory
 
 
 class StreamingGeneratorCallbackHandler(BaseCallbackHandler):
@@ -69,33 +67,12 @@ class BaseModel:
         self.conversations = conversations
 
         if conversations:
-            self.memory = ConversationBufferWindowMemory(chat_memory=self._loadConversationsToMemory(conversations),
+            self.memory = ConversationBufferWindowMemory(chat_memory=loadAllConversationsToMemory(conversations, self.ai_prefix, self.human_prefix),
                                                          k=self.NUM_SHORT_TERM_CONVERSATION)
         else:
             self.memory = ConversationBufferWindowMemory(k=self.NUM_SHORT_TERM_CONVERSATION)
         
 
-    def _loadConversationsToMemory(self, conversations):
-        out = []
-        for sessions in conversations:
-            for chat in sessions["conversation"]:
-                for k, v in chat["content"].items():
-                    if k != self.ai_prefix and k != self.human_prefix:
-                        continue
-
-                    currentDict = {
-                        "type": k,
-                        "data": {
-                            "content": v,
-                            "additional_kwargs": {}
-                        }
-                    }
-                    out.append(currentDict)
-        self.n_old_msgs = len(out)
-
-        retrieved_messages = messages_from_dict(out)
-        retrieved_chat_history = ChatMessageHistory(messages=retrieved_messages)
-        return retrieved_chat_history
     
     def _chat(self, message, **kwargs):
         # Get the prompt templates based on (1) the device and (2) the client

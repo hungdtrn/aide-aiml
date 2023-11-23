@@ -15,7 +15,7 @@ from threading import Event, Thread
 from typing import Any, Generator, Union
 from prompts import get_template
 
-from ai_utils import run_with_timeout_retry
+from ai_utils import run_with_timeout_retry, conversation_to_string
 
 class BaseModel:
     human_prefix = ""
@@ -44,14 +44,6 @@ class BaseModel:
             info.append("{} - {}".format(conv["date"], conv["information"]))
         return info
     
-    def _conversation_to_string(self, conversation):
-        """ Convert the converstation dicct list to covnersation string list
-        """
-        out = ""
-        for line in conversation:
-            for k, v in line["content"].items():
-                out += "{}: {}\n".format(k, v)
-        return out
 
     def insights_from_description(self, medicalInput, carerInput):
         patient_info_template = self.prompt_templates.get_prompt_template(self.prompt_templates.PATIENT_INFO_EXTRACTION,
@@ -64,7 +56,7 @@ class BaseModel:
         return self._convert_insights_to_list(patient_info)
 
     def insights_from_conversation(self, conversation):
-        conversation = self._conversation_to_string(conversation)
+        conversation = self.conversation_to_string(conversation)
         conversation_info_template = self.prompt_templates.get_prompt_template(self.prompt_templates.CONVERSATION_INFO_EXTRACTION,
                                                                             human_prefix=self.human_prefix,
                                                                             ai_prefix=self.ai_prefix)

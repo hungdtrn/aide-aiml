@@ -87,7 +87,7 @@ def insights_from_conversation(conversation_dict, cached=True, conversation_prom
         print("Using cached information")
         return conversation_dict
 
-    conversation_dict["information"] = _insights_from_description(conversation_dict["conversation"], conversation_prompter)
+    conversation_dict["information"] = _insights_from_description(conversation_dict, conversation_prompter)
     return conversation_dict
 
 def prepare_topic(userId, date, cached=True):
@@ -205,6 +205,51 @@ def prepare_topic(userId, date, cached=True):
     # return summariser.summarise(conversation)
 
 
+def _summarize_all_previous_conversation(userId, cached=True):
+    """ For demo. Summarise all previous conversations
+    """
+
+    conversations = storage.readConversation(userId)
+    summary_list = storage.readDailySummary(userId)
+    summariser = build_summariser(AI_MODEL)
+    summaries_by_date = {}
+    for s in summary_list:
+        summaries_by_date[s["date"]] = s
+
+    out = []
+
+    for i, conv in enumerate(conversations):
+        current_date = conv["date"]
+        if current_date in summaries_by_date and summaries_by_date[conv["date"]].get("summary", "") and cached:
+            print("Using previous summary")
+            out.append(summaries_by_date[current_date])
+            continue
+
+        if current_date == get_today():
+            break
+
+        if not conv["conversation"]:
+            out.append({
+                "date": current_date,
+                "summary": "",
+                "tokenCnt": 0,
+                "aiVersion": VERSION,
+            })
+            continue         
+       
+
+        print("Summarising {}".format(current_date))
+        currentDailySummary = summariser.dailySummary(conv)
+        out.append({
+                "date": current_date,
+                "summary": currentDailySummary,
+                "tokenCnt": 0,
+                "aiVersion": VERSION,
+        })
+    
+    storage.writeDailySummary(userId, out)
+    
+
 def process_data_for_demo():
     def _patch_conversation(userId):
         conversations = storage.readConversation(userId)
@@ -232,10 +277,17 @@ def process_data_for_demo():
 
         print("2. Extract insights from the medical and carer inputs")
         insights_from_description(userId)
-        time.sleep(3)
         
         # prepare_topic 
         print("3. Let AI preparing topics for initialising the personalised converssation with the patient")
         print("For the first runnning of the day, it might take a while to run...")
         print("This feature will be called once a day!")
         prepare_topic(userId, get_today())
+
+        print("4. Summarize all conversatons of previous days")
+        _summarize_all_previous_conversation(userId, cached=True)
+
+        print("5. Generate health record")
+
+
+        print("Done!")

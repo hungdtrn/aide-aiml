@@ -133,22 +133,13 @@ Current conversation:
 <human_prefix>: {input}
 <ai_prefix>:"""   
 
-    CHAT = """The following is a friendly conversation between a human and an AI Assistant. The AI is friendly and supportive to the human. The AI's responses should prioritize the well-being of the human and avoid saying anything harmful.
-
-    Current conversation:
-    {history}
-
-    <human_prefix>: {input}
-    <ai_prefix>:""" 
-
-    DAILY_SUMMARY =  """This is a conversation between a patient and an AI Assistant. Summarize the patient's emotional state. This summary will be used to assess the patient's mental health.
+    DAILY_SUMMARY =  """<meta_instruction>. This is a conversation between you and the patient. Summarize the patient's emotional, mental, and physical state throughout the day. Use this summary to monitor and track the patient's overall well-being.
 
 {new_lines}
 """    
 
-    DEVELOPMENT_SUMMARY = """This is a conversation between a patient and an AI Assistant. 
-Progressively summarize the patient's emotional state, building upon the previous summary to generate a new assessment of their mental health.
-
+    DEVELOPMENT_SUMMARY = """<meta_instruction>. This is a conversation between you and the patient for today. Progressively summarize the developemt of the patient's emotional, mental, and physical state of the patient throughout the day, expanding on the previous summary to create a new assessment of their overall well-being.
+    
 EXAMPLE
 Current summary:
 The patient is feeling bad today because they have just broken up with their girlfriend. They express sadness and hurt over the end of the relationship. They are looking for someone to talk to and seek support from.
