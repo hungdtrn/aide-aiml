@@ -6,10 +6,14 @@ import json
 from flask import Flask, jsonify, request, render_template, Response
 
 import storage
-from utils import get_now, get_today, insights_from_description, get_today_conversation
+from utils import get_now, get_today, insights_from_description, get_today_conversation, process_data_for_demo
 from ai import VERSION, MODELS, build_chat_session, build_summariser, build_conversation_prompter
 
 AI_MODEL = MODELS.CHATGPT
+
+print("----------- Preparing and Processing the data. This may take while --------")
+process_data_for_demo()
+
 app = Flask(__name__)
 
 chatSessionDict = {}
@@ -31,7 +35,7 @@ chatSessionDict = {}
 
 # NOTE:
 # The retrieval/memory things could be done later. At first, just use the context from the previous conversations. 
-
+# Should the pre-compute the welcome messages? Let decide based on the latency of the welcome api
 
 def _get_chatsession_or_create(userId):
     if userId in chatSessionDict:
@@ -67,6 +71,7 @@ def welcome():
     userId = request.json["userId"]
     session = _get_chatsession_or_create(userId)
     conversations = get_today_conversation(userId)
+    
 
     response = session.welcome()
     conversations[-1]["conversation"].append({

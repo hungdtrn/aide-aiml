@@ -64,18 +64,18 @@ Current conversation:
 {conversation}
 """
 
-    TOPIC_SUGGESTION_WITHOUT_CONVERSATION = """<meta_instruction>. Utilize patient information to generate {n_topics} conversation topics for future interactions, ensuring to exclude disliked topics and avoid repetition. Present the list in bullet points in the provided response format.
+    TOPIC_SUGGESTION_WITHOUT_CONVERSATION = """<meta_instruction>. Utilize patient information to generate {n_topics} conversation topics for future interactions, ensuring to exclude disliked topics and avoid repetition. For each topic, collect related context from the provided information that can be used to initiate the conversation. Present the list in bullet points in the provided response format. Present the list in bullet points in the provided response format.
 
 Patient Information:
 {patient_info}
 
 Response format:
-- Topic: Topic name. Details:
-- Topic: Topic name. Details:
+- Topic: Topic name. Context: Relevant information that can be used to initiate the conversation.
+- Topic: Topic name. Context: relevant information that can be used to initiate the conversation.
 ...
 """
 
-    TOPIC_SUGGESTION_WITH_CONVERSATION = """<meta_instruction>. Utilize patient information and insights from previous conversations to generate {n_topics} conversation topics for future interactions, ensuring to exclude disliked topics and avoid repetition. Present the list in bullet points in the provided response format.
+    TOPIC_SUGGESTION_WITH_CONVERSATION = """<meta_instruction>. Utilize patient information and insights from previous conversations to generate {n_topics} conversation topics for future interactions, ensuring to exclude disliked topics and avoid repetition. For each topic, collect related context from the provided information that can be used to initiate the conversation. Present the list in bullet points in the provided response format. Present the list in bullet points in the provided response format.
 
 Patient Information:
 {patient_info}
@@ -84,8 +84,8 @@ Insights from the previous conversation:
 {previous_insight}
 
 Response format:
-- Topic: Topic name. Details:
-- Topic: Topic name. Details:
+- Topic: Topic name. Context: Relevant information that can be used to initiate the conversation.
+- Topic: Topic name. Context: relevant information that can be used to initiate the conversation.
 ...
 """
 

@@ -67,6 +67,8 @@ def get_today_conversation(userId):
         })
     return conversations
 
+def save_summary(userId):
+    pass
 
 # def get_details_from_last_conversation(conversations):
 #     if len(conversations) <= 1:
@@ -107,14 +109,30 @@ def prepare_topic(userId, date, cached=True):
 
     raw_conversations = storage.readConversation(userId)
     if len(raw_conversations) == 0:
-        return []
+        return None
     
-    # Onlu considers the dates with conversations
+    if raw_conversations[-1]["date"] == date and raw_conversations[-1]["topicSuggestions"]:
+        print("Using cached topic suggestions")
+        return raw_conversations[-1]["topicSuggestions"]
+
+    
+    # If last conversation is empty, use the suggestions from that conversation
+    if not raw_conversations[-1]["conversation"] and raw_conversations[-1]["date"] < date and raw_conversations[-1].get("topicSuggestions", []):
+        raw_conversations.append({
+            "date": date,
+            "conversation": [],
+            "version": VERSION,
+            "tokeCnt": 0,
+            "topicSuggestions": raw_conversations[-1].get("topicSuggestions"),
+            "information": []
+        })
+        storage.writeConversation(userId, raw_conversations)
+        return None
+
+
+    # Only considers the dates with conversations
     conversations = [x for x in raw_conversations if x["conversation"]]
 
-    # If last conversation is empty, use the suggestions from that conversation
-    if not conversations[-1]["conversation"] and conversations[-1].get("topicSuggestions", []):
-        pass
 
     # prepare the previous conversations
     last_conv = conversations[-n_prev_conv:]
@@ -134,11 +152,13 @@ def prepare_topic(userId, date, cached=True):
         "conversation": [],
         "version": VERSION,
         "tokeCnt": 0,
-        "topicSuggestions": [], "information": []
+        "topicSuggestions": [], 
+        "information": []
     }
     is_new = True
 
     for i in range(len(conversations)):
+        print(conversations[i]["date"])
         if conversations[i]["date"] == date:
             last_conv = conversations[i-n_prev_conv:i]
             next_conv = conversations[i]
@@ -167,12 +187,51 @@ def prepare_topic(userId, date, cached=True):
     storage.writeConversation(userId, raw_conversations)
 
     patient_info = insights_from_description(userId)
-    conversation_prompter = build_conversation_prompter(AI_MODEL)
-    conversation_prompter.topic_suggestions(patient_info, convs)
 
+    conversation_prompter = build_conversation_prompter(AI_MODEL)
+    suggested_topics = conversation_prompter.topic_suggestions(patient_info, convs)
+    next_conv["topicSuggestions"] = suggested_topics
+    if is_new:
+        raw_conversations.append(next_conv)
+    
+    storage.writeConversation(userId, raw_conversations)
+    
 
     
 
     # conversation = conversations[-2]
     # summariser = build_summariser(AI_MODEL)
     # return summariser.summarise(conversation)
+
+
+def process_data_for_demo():
+    def _patch_conversation(userId):
+        conversations = storage.readConversation(userId)
+        for date in conversations:
+            for conversation in date["conversation"]:
+                if "content" not in conversation:
+                    if "human" in conversation:
+                        conversation["content"] = {
+                            "human": conversation.pop("human")
+                        }
+                    
+                    if "ai" in conversation:
+                        conversation["content"] = {
+                            "ai": conversation.pop("ai")
+                        }
+        storage.writeConversation(userId, conversations)
+
+    # Prepare the topic for current day
+    # Get the summary for previous days
+
+    for userId in [0]:
+        # Patch conversation
+        print("Patching the conversation data to the new format")
+        _patch_conversation(userId)
+
+        print("Extract insights from the medical and carer inputs")
+        insights_from_description(userId)
+        
+        # prepare_topic 
+        print("Prepare topics for initialise the personalised converssation with the patient")
+        prepare_topic(userId, get_today())

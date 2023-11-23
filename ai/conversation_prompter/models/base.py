@@ -82,8 +82,6 @@ class BaseModel:
     def topic_suggestions(self, patient_info, conversation_info):
         conv_info = self._append_date_to_info_list(conversation_info)
         
-        print(conv_info)
-
         if not conv_info:
             topic_suggestion_template = self.prompt_templates.get_prompt_template(self.prompt_templates.TOPIC_SUGGESTION_WITHOUT_CONVERSATION,
                                                                                         human_prefix=self.human_prefix,
