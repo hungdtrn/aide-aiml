@@ -1,6 +1,6 @@
 from .chatsession import build_chat_session
 from .summariser import build_summariser
-from .feat_extract import build_feat_extractor
+from .conversation_prompter import build_conversation_prompter
 
 VERSION = "v1"
 class MODELS:
