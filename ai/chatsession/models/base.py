@@ -138,6 +138,7 @@ class BaseModel:
                 "topics": self.topics,
             }
 
+        print(prompt, prompt_input)
         chain = LLMChain(llm=self.model, prompt=prompt)
         out = chain(prompt_input)
         return out
