@@ -1,5 +1,5 @@
 import streamlit as st
-from client import dailySummary, dailyIndicator
+from client import dailySummary, dailyIndicator, CACHE_NUM_ENTRY, CACHE_TTL
 import requests
 import json
 import pandas as pd
@@ -10,6 +10,15 @@ import matplotlib.pyplot as plt
 st.title("AIDE")
 st.text("Medical page")
 st.header("Medical summary")
+
+@st.cache_data(ttl=CACHE_TTL)
+def querying_summary():
+    return dailySummary(obj =  {"userId": userID, "n" : num_tabs})
+
+@st.cache_data(ttl=CACHE_TTL)
+def quyerying_indicator():
+    return dailyIndicator(obj = {"userId": userID, "n" : 5})
+
 
 
 # Just for demo how we use the summary API
@@ -44,7 +53,7 @@ else:
 if st.checkbox('View daily Summary', disabled = checkbox_disabled):
 
     num_tabs = 5
-    response = dailySummary(obj =  {"userId": userID, "n" : num_tabs})
+    response = querying_summary()
     df = pd.DataFrame.from_dict(response['response'])
     # Check dataframe length, and if shorter than n, return only that many tabs
     if len(df) < num_tabs:
@@ -71,7 +80,7 @@ if st.checkbox('View daily Summary', disabled = checkbox_disabled):
 
 if st.checkbox('View Indicator Trends', disabled = checkbox_disabled):
     try:
-        indicator = dailyIndicator(obj = {"userId": userID, "n" : 5})
+        indicator = quyerying_indicator()
         #--- Indicator trends---#
         st.header("Indicator Trends")
 

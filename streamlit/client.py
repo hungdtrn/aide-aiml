@@ -4,6 +4,8 @@ import json
 server_url = "http://127.0.0.1:8080"
 # server_url = "https://aide-server-ogdrzymura-km.a.run.app"
 
+CACHE_NUM_ENTRY = 1
+CACHE_TTL = 3600
 
 def set_url(url):
     """

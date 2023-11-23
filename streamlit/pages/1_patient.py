@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 import json
-from client import welcome, post, chatStream
+from client import welcome, post, chatStream, CACHE_NUM_ENTRY, CACHE_TTL
 import types
 
 # Page title
@@ -13,7 +13,7 @@ st.text("Patient page")
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-@st.cache_data
+@st.cache_data(ttl=CACHE_TTL)
 def starting_application():
     return welcome(obj = {"userId": 0, "streaming": False})
     
@@ -24,6 +24,7 @@ try:
     message = st.chat_message("assistant")
     message.write(welcome_msg["response"])
 except Exception as e:
+    message = st.chat_message("assistant")
     message.write("Apologies we seem to be having internal issues, We are trying to fix this currently. Thank you for your patience")
 
 
