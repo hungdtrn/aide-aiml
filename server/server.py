@@ -64,7 +64,7 @@ def _userDailySummary(userId):
             pass
         else:
             summariser = build_summariser(AI_MODEL)
-            currentDailySummary = summariser.dailySummary(conversations[-1]["conversation"])
+            currentDailySummary = summariser.dailySummary(conversations[-1])
             dailySummary.append({
                 "date": get_today(),
                 "summary": currentDailySummary,
@@ -246,20 +246,40 @@ def getdevSummary():
 @app.route("/indicator", methods=['POST'])
 def getIndicator():
     userId = request.json["userId"]
-    indicator = storage.readIndicator(userId)
-    num_record = request.json["n"]
+    indicators = storage.readIndicator(userId)
+    dailySummaries = _userDailySummary(userId)["response"]
+    summariser = build_summariser(AI_MODEL)
+    indicator_by_date = {}
+    cached = True
+    for s in indicators:
+        indicator_by_date[s["date"]] = s
+    
+    out = []
+    for i, s in enumerate(dailySummaries):
+        current_date = s["date"]
+        if current_date in indicator_by_date and indicator_by_date[current_date].get("indicators", "") and cached:
+            out.append(indicator_by_date[current_date])
+            continue
 
-    # TODO: implemenent the session indicato
+        if not s["summary"]:
+            out.append({
+                "date": current_date,
+                "indicators": {},
+                "aiVersion": VERSION,
+            })
+            continue
 
-    # if not indicator or indicator[-1]["date"] != get_today():
-    #     session = _get_chatsession_or_create(userId)
-    #     currentindicator = session.indicator()
-    #     indicator.append(currentindicator)
-    #     storage.writeindicator(userId, indicator)
+        currentIndicator = summariser.computeIndicators(s["summary"])
+        out.append({
+                "date": current_date,
+                "indicators": currentIndicator,
+                "aiVersion": VERSION,
+        })
 
-    currentindicator = indicator[-num_record:]
+    storage.writeIndicator(userId, out)
+
     return {
-        "response": currentindicator
+        "response": out
     }
 
 @app.route("/medicalInput", methods=['GET'])

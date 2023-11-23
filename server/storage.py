@@ -100,6 +100,9 @@ def readDevSummary(userId):
 def readIndicator(userId):
     return download(f"indicator/{userId}.json")
 
+def writeIndicator(userId, indicator):
+    upload(f"indicator/{userId}.json", json.dumps(indicator, indent=2))
+
 def readMedicalInput(userId):
     return download(f"medicalInput/{userId}.json")
 

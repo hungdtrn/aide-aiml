@@ -1,4 +1,5 @@
 import os
+import json
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
@@ -27,12 +28,12 @@ class BaseModel:
     max_conversation = 30
     def __init__(self) -> None:
         load_dotenv()
+        self.prompt_templates = get_template()
     
     def dailySummary(self, conversation):
         conversation = conversation_to_string(conversation, to_string=False)
         conversation = conversation[-self.max_conversation*2:]
-        templates = get_template()
-        dailySummary_template = templates.get_prompt_template(templates.DAILY_SUMMARY,
+        dailySummary_template = self.prompt_templates.get_prompt_template(self.prompt_templates.DAILY_SUMMARY,
                                                         human_prefix=self.human_prefix,
                                                         ai_prefix=self.ai_prefix)
         dailySummary_prompt = PromptTemplate(input_variables=["new_lines"],
@@ -47,10 +48,8 @@ class BaseModel:
     def devSummary(self, pastSummary, conversation):
         conversation = conversation_to_string(conversation, to_string=False)
         conversation = conversation[-self.max_conversation*2:]
-
-        templates = get_template()
         
-        devSummary_template = templates.get_prompt_template(templates.DEVELOPMENT_SUMMARY,
+        devSummary_template = self.prompt_templates.get_prompt_template(self.prompt_templates.DEVELOPMENT_SUMMARY,
                                                                human_prefix=self.human_prefix,
                                                                ai_prefix=self.ai_prefix)
 
@@ -62,5 +61,27 @@ class BaseModel:
         devSummary = run_with_timeout_retry(development_chain, {"summary": pastSummary, 
                                                                 "new_lines": conversation})["text"]
         return devSummary
+    
+    def computeIndicators(self, dailySummary):
+        indicator_template = self.prompt_templates.get_prompt_template(self.prompt_templates.INDICATOR,
+                                                               human_prefix=self.human_prefix,
+                                                               ai_prefix=self.ai_prefix)
+        indicator_prompt = PromptTemplate(template=indicator_template,
+                                          input_variables=["summary"])
+
+        indicator_chain = LLMChain(llm=self.model, prompt=indicator_prompt)
+
+        indicator = {}
+        for i in range(3):
+            try:
+                indicator = run_with_timeout_retry(indicator_chain, {"summary": dailySummary})["text"]
+                indicator = json.loads(indicator)
+                break
+            except Exception as e:
+                print(e)
+                print("Retrying")
+
+        return indicator
+
 
 

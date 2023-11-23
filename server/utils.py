@@ -249,6 +249,41 @@ def _summarize_all_previous_conversation(userId, cached=True):
     
     storage.writeDailySummary(userId, out)
     
+def _compute_indicator_all_previous_conversation(userId, cached=True):
+    dailySummaires = storage.readDailySummary(userId)
+    indicators = storage.readIndicator(userId)
+    summariser = build_summariser(AI_MODEL)
+    indicator_by_date = {}
+    for s in indicators:
+        indicator_by_date[s["date"]] = s
+
+    out = []
+    for i, s in enumerate(dailySummaires):
+        current_date = s["date"]
+        if current_date in indicator_by_date and indicator_by_date[current_date].get("indicators", "") and cached:
+            print("Using previous indicator")
+            out.append(indicator_by_date[current_date])
+            continue
+
+        if not s["summary"]:
+            out.append({
+                "date": current_date,
+                "indicators": {},
+                "aiVersion": VERSION,
+            })
+            continue
+
+        print("Computing indicator for {}".format(current_date))
+        currentIndicator = summariser.computeIndicators(s["summary"])
+        out.append({
+                "date": current_date,
+                "indicators": currentIndicator,
+                "aiVersion": VERSION,
+        })
+
+    storage.writeIndicator(userId, out)
+
+
 
 def process_data_for_demo():
     def _patch_conversation(userId):
@@ -288,6 +323,6 @@ def process_data_for_demo():
         _summarize_all_previous_conversation(userId, cached=True)
 
         print("5. Generate health record")
-
+        _compute_indicator_all_previous_conversation(userId, cached=True)
 
         print("Done!")
