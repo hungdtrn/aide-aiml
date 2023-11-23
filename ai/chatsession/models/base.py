@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
 from langchain.chains import ConversationChain, LLMChain
 from langchain.memory.chat_message_histories.in_memory import ChatMessageHistory
-from langchain.chains.conversation.memory import ConversationBufferMemory
+from langchain.chains.conversation.memory import ConversationBufferMemory, ConversationBufferWindowMemory
 from langchain.schema import (
     LLMResult,
     messages_from_dict, messages_to_dict
@@ -57,6 +57,8 @@ class BaseModel:
     human_prefix = ""
     ai_prefix = ""
     model = None
+    NUM_SHORT_TERM_CONVERSATION = 10
+
     def __init__(self, conversations, patient_info, topics) -> None:
         load_dotenv()
         self.prompt_templates = get_template()
@@ -65,17 +67,19 @@ class BaseModel:
         self.topics = topics
         
         self.conversations = conversations
-        if conversations:
-            self.memory = ConversationBufferMemory(chat_memory=self._loadConversationsToMemory(conversations))
-        else:
-            self.memory = ConversationBufferMemory()
 
+        if conversations:
+            self.memory = ConversationBufferWindowMemory(chat_memory=self._loadConversationsToMemory(conversations),
+                                                         k=self.NUM_SHORT_TERM_CONVERSATION)
+        else:
+            self.memory = ConversationBufferWindowMemory(k=self.NUM_SHORT_TERM_CONVERSATION)
+        
 
     def _loadConversationsToMemory(self, conversations):
         out = []
         for sessions in conversations:
             for chat in sessions["conversation"]:
-                for k, v in chat.items():
+                for k, v in chat["content"].items():
                     if k != self.ai_prefix and k != self.human_prefix:
                         continue
 
