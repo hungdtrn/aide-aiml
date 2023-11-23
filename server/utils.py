@@ -84,7 +84,7 @@ def _insights_from_description(conversation):
 def insights_from_conversation(conversation_dict, cached=True):
     if conversation_dict["information"] and cached:
         print("Using cached information")
-        return conversation_dict["information"]
+        return conversation_dict
 
     conversation_dict["information"] = _insights_from_description(conversation_dict["conversation"])
     return conversation_dict
@@ -102,15 +102,33 @@ def prepare_topic(userId, date, cached=True):
     OPTIONALS:
     6. Query the relevant contexts for each topics
     """
-    n_prev_conv = 4
-    n_random_conv = 3
+    n_prev_conv = 1
+    n_random_conv = 1
 
-    conversations = storage.readConversation(userId)
-    if len(conversations) == 0:
+    raw_conversations = storage.readConversation(userId)
+    if len(raw_conversations) == 0:
         return []
+    
+    # Onlu considers the dates with conversations
+    conversations = [x for x in raw_conversations if x["conversation"]]
 
+    # If last conversation is empty, use the suggestions from that conversation
+    if not conversations[-1]["conversation"] and conversations[-1].get("topicSuggestions", []):
+        pass
+
+    # prepare the previous conversations
     last_conv = conversations[-n_prev_conv:]
-    random_conv = np.random.choice(conversations[:n_prev_conv], n_random_conv)
+
+    # prepare the remain conversation
+    remains = len(conversations) - n_prev_conv
+    if remains > 0:
+        if remains > n_random_conv:
+            random_conv = np.random.choice(conversations[:remains], n_random_conv, replace=False)
+        else:
+            random_conv = conversations[:remains]
+    else:
+        random_conv = []
+
     next_conv = {
         "date": date,
         "conversation": [],
@@ -120,12 +138,24 @@ def prepare_topic(userId, date, cached=True):
     }
     is_new = True
 
-    for i in range(conversations):
+    for i in range(len(conversations)):
         if conversations[i]["date"] == date:
             last_conv = conversations[i-n_prev_conv:i]
             next_conv = conversations[i]
-            random_conv = np.random.choice(conversations[:i-n_prev_conv], n_random_conv)
+            remains = i - n_prev_conv
+            if remains > 0:
+                if remains > n_random_conv:
+                    random_conv = np.random.choice(conversations[:remains], n_random_conv, replace=False)
+                else:
+                    random_conv = conversations[:remains]
+            else:
+                random_conv = []
+
             is_new = False
+            break
+        elif conversations[i]["date"] > date:
+            print("No date specified")
+            return
 
     if cached and next_conv["topicSuggestions"]:
         print("Using cached topic suggestions")
@@ -134,8 +164,7 @@ def prepare_topic(userId, date, cached=True):
     convs = [insights_from_conversation(conversation) for conversation in random_conv]
     convs.extend([insights_from_conversation(conversation) for conversation in last_conv])
 
-    storage.writeConversation(userId, conversations)
-
+    storage.writeConversation(userId, raw_conversations)
 
     patient_info = insights_from_description(userId)
     conversation_prompter = build_conversation_prompter(AI_MODEL)

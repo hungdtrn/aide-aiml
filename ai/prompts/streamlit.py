@@ -52,34 +52,41 @@ New summary:
 class ElderlyPrompt(BasePropmtTemplates):
     META_INSTRUCTION = """You are an Elderly Care Assistant named AIDE. Your main duty is to cultivate engaging conversations and encourage the patient to share aspects of their life, including hobbies, relationships, preferences, concerns, issues, and health problems"""
     
-    PATIENT_INFO_EXTRACTION = """<meta_instruction>. Considering the patient's description, extract relevant information for future conversations and tracking. Keep the information succinct, and return a list of bullet points in the provided response format.
+    PATIENT_INFO_EXTRACTION = """<meta_instruction>. Considering the patient's description, extract relevant information for future conversations and tracking. Present the information in a succinct paragraph, highlighting key details.
 
 Patient's description:
 {patient_description}
-
-Response format:
-- Detail 1
-- Detail 2
-...
-
-Examples:
-- name: Test
-- hobbies: running, coding
 """
 
-    CONVERSATION_INFO_EXTRACTION = """<meta_instruction>. Utilize information from the current conversation log to extract relevant details for future conversations. Return a list of bullet points in the provided response format.
+    CONVERSATION_INFO_EXTRACTION = """<meta_instruction>. Utilize information from the current conversation log to extract relevant details for future conversations. Present the information in a succinct paragraph, highlighting key details.
 
 Current conversation:
 {conversation}
+"""
+
+    TOPIC_SUGGESTION_WITHOUT_CONVERSATION = """<meta_instruction>. Utilize patient information to generate {n_topics} conversation topics for future interactions, ensuring to exclude disliked topics and avoid repetition. Present the list in bullet points in the provided response format.
+
+Patient Information:
+{patient_info}
 
 Response format:
-- Detail 1
-- Detail 2
+- Topic: Topic name. Details:
+- Topic: Topic name. Details:
 ...
+"""
 
-Examples:
-- The patient mentioned that he will visit his friend by tomorrow.
-- The patient mentioned that about a dancing club.
+    TOPIC_SUGGESTION_WITH_CONVERSATION = """<meta_instruction>. Utilize patient information and insights from previous conversations to generate {n_topics} conversation topics for future interactions, ensuring to exclude disliked topics and avoid repetition. Present the list in bullet points in the provided response format.
+
+Patient Information:
+{patient_info}
+
+Insights from the previous conversation:
+{previous_insight}
+
+Response format:
+- Topic: Topic name. Details:
+- Topic: Topic name. Details:
+...
 """
 
     CHAT = """The following is a friendly conversation between a human and an AI Assistant. The AI is friendly and supportive to the human. The AI's responses should prioritize the well-being of the human and avoid saying anything harmful.
