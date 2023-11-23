@@ -89,6 +89,33 @@ Response format:
 ...
 """
 
+    WELCOME_MESSAGE_NEW_CONVERSATION = """<meta_instruction>. Begin the conversation by introducing yourself, conveying your eagerness to listen and assist, and initiate with a genuine two-sentence conversation starter on a randomly chosen topic from the suggestions provided, considering the context provided with the topic and the patient information. This is your first interaction with the patient; aim for authenticity and avoid repetition.
+
+Patient information:
+{patient_info}
+
+Suggested Topics:
+{topics}
+
+Conversation starter:
+This is a conversation. Keep the starter real, humorous, and short, in at most two sentences.
+"""
+
+    WELCOME_MESSAGE_CONTINUE_CONVERSATION = """<meta_instruction>. Since you've already had a conversation today, welcome the patient back, introduce yourself shortly, and initiate with a genuine two-sentence conversation starter on a randomly chosen topic from the suggestions provided, considering the context provided with the topic and the patient information. This is your first few interactions with the patient; aim for authenticity and avoid repetition.
+
+Patient information:
+{patient_info}
+
+Suggested Topics:
+{topics}
+
+Previous conversations:
+{conversation}
+
+Conversation starter:
+This is a conversation. Keep the starter real, humorous, and short, in at most two sentences.
+"""
+
     CHAT = """The following is a friendly conversation between a human and an AI Assistant. The AI is friendly and supportive to the human. The AI's responses should prioritize the well-being of the human and avoid saying anything harmful.
 
 Current conversation:

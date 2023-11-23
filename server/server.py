@@ -6,7 +6,7 @@ import json
 from flask import Flask, jsonify, request, render_template, Response
 
 import storage
-from utils import get_now, get_today, insights_from_description, get_today_conversation, process_data_for_demo
+from utils import get_now, get_today, insights_from_description, get_conversations, process_data_for_demo, prepare_topic
 from ai import VERSION, MODELS, build_chat_session, build_summariser, build_conversation_prompter
 
 AI_MODEL = MODELS.CHATGPT
@@ -42,12 +42,13 @@ def _get_chatsession_or_create(userId):
         return chatSessionDict[userId]
     else:
         conversations = storage.readConversation(userId)
-        carerInput = storage.readCarerInput(userId)
-        medicalInput = storage.readMedicalInput(userId)
+        patient_description = insights_from_description(userId)
+        topics = prepare_topic(userId, get_today(), cached=True)
+
         chatSessionDict[userId] = build_chat_session(AI_MODEL ,
                                                      conversations=conversations,
-                                                     carerInput=carerInput,
-                                                     medicalInput=medicalInput)
+                                                     patient_info=patient_description,
+                                                     topics=topics)
         return chatSessionDict[userId]
 
 @app.route('/')
@@ -69,21 +70,40 @@ def welcome():
     """ Get the welcome message from the server
     """
     userId = request.json["userId"]
+    streaming = request.json.get("streaming", False)
+
+
     session = _get_chatsession_or_create(userId)
-    conversations = get_today_conversation(userId)
-    
+    conversations = get_conversations(userId)
 
-    response = session.welcome()
-    conversations[-1]["conversation"].append({
-        "time": get_now(),
-        "content": {session.ai_prefix: response,},
-        "tokenCnt": 0,
-    })
-    storage.writeConversation(userId, conversations)
+    response = session.welcome(streaming=streaming)
+    if not streaming:
+        conversations[-1]["conversation"].append({
+            "time": get_now(),
+            "content": {session.ai_prefix: response,},
+            "tokenCnt": 0,
+        })
+        storage.writeConversation(userId, conversations)
+        return {
+            "response": response
+        }
+    else:
+        def generate():
+            msg = ""
+            for word in response:
+                msg += word
+                yield word
+            msg.strip()
+            conversations[-1]["conversation"].append({
+                "time": get_now(),
+                "content": {session.ai_prefix: msg,},
+                "tokenCnt": 0,
+            })
+            storage.writeConversation(userId, conversations)
+            yield ""
 
-    return {
-        "response": response
-    }
+        return app.response_class(generate(), mimetype='text/text')
+
 
 @app.route("/chat", methods=['POST'])
 def chat():
@@ -95,7 +115,7 @@ def chat():
     session = _get_chatsession_or_create(userId)
 
     # Get the conversation history
-    conversations = get_today_conversation(userId)
+    conversations = get_conversations(userId)
 
     message = request.json["message"]
 
@@ -130,7 +150,7 @@ def chat_stream():
     message = request.json["message"]
 
     # Get the conversation history
-    conversations = get_today_conversation(userId)
+    conversations = get_conversations(userId)
 
     # Store the message of the human
     conversations[-1]["conversation"].append({
@@ -159,6 +179,7 @@ def chat_stream():
 
     response = app.response_class(generate(), mimetype='text/text')
     return response
+
 
 @app.route("/dailySummary", methods=['POST'])
 def getDailySummary():

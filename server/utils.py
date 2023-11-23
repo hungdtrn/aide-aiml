@@ -6,14 +6,10 @@ import datetime
 import storage
 import numpy as np
 
-from ai import VERSION, MODELS, build_chat_session, build_summariser, build_conversation_prompter
+from ai import VERSION, MODELS, build_chat_session, build_summariser, build_conversation_prompter, get_today, get_now
 AI_MODEL = MODELS.CHATGPT
 
-def get_today():
-    return datetime.datetime.now().strftime("%Y-%m-%d")
 
-def get_now():
-    return datetime.datetime.now().isoformat()
 
 def insights_from_description(userId):
     user = storage.readUser(userId)
@@ -56,7 +52,7 @@ def insights_from_description(userId):
     
     return user["ai_details"]
 
-def get_today_conversation(userId):
+def get_conversations(userId):
     conversations = storage.readConversation(userId)
     if len(conversations)==0 or conversations[-1]["date"] != get_today():
         conversations.append({
@@ -109,7 +105,7 @@ def prepare_topic(userId, date, cached=True):
 
     raw_conversations = storage.readConversation(userId)
     if len(raw_conversations) == 0:
-        return None
+        return ""
     
     if raw_conversations[-1]["date"] == date and raw_conversations[-1]["topicSuggestions"]:
         print("Using cached topic suggestions")
@@ -127,7 +123,7 @@ def prepare_topic(userId, date, cached=True):
             "information": []
         })
         storage.writeConversation(userId, raw_conversations)
-        return None
+        return raw_conversations[-1].get("topicSuggestions")
 
 
     # Only considers the dates with conversations
@@ -175,7 +171,7 @@ def prepare_topic(userId, date, cached=True):
             break
         elif conversations[i]["date"] > date:
             print("No date specified")
-            return
+            return ""
 
     if cached and next_conv["topicSuggestions"]:
         print("Using cached topic suggestions")
@@ -196,6 +192,7 @@ def prepare_topic(userId, date, cached=True):
     
     storage.writeConversation(userId, raw_conversations)
     
+    return next_conv["topicSuggestions"]
 
     
 

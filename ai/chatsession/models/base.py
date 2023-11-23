@@ -18,6 +18,7 @@ from queue import Queue
 from threading import Event, Thread
 from typing import Any, Generator, Union
 from prompts import get_template
+from ai_utils import get_today
 
 
 class StreamingGeneratorCallbackHandler(BaseCallbackHandler):
@@ -56,8 +57,12 @@ class BaseModel:
     human_prefix = ""
     ai_prefix = ""
     model = None
-    def __init__(self, conversations, carerInput, medicalInput) -> None:
+    def __init__(self, conversations, patient_info, topics) -> None:
         load_dotenv()
+        self.prompt_templates = get_template()
+
+        self.patient_info = patient_info
+        self.topics = topics
         
         self.conversations = conversations
         if conversations:
@@ -88,10 +93,19 @@ class BaseModel:
         retrieved_chat_history = ChatMessageHistory(messages=retrieved_messages)
         return retrieved_chat_history
 
+    def _conversation_to_string(self, conversation):
+        """ Convert the converstation dicct list to covnersation string list
+        """
+        out = ""
+        for line in conversation:
+            for k, v in line["content"].items():
+                out += "{}: {}\n".format(k, v)
+        return out
+
+
     def _chat(self, message, **kwargs):
         # Get the prompt templates based on (1) the device and (2) the client
-        templates = get_template()
-        prompt_template = templates.get_prompt_template(templates.CHAT,
+        prompt_template = self.prompt_templates.get_prompt_template(self.prompt_templates.CHAT,
                                                   human_prefix=self.human_prefix, ai_prefix=self.ai_prefix)
 
         prompt = PromptTemplate.from_template(prompt_template)
@@ -102,13 +116,49 @@ class BaseModel:
         )
         return chain(message)
     
-    def welcome(self):
-        if self.conversations:
-            msg = "Welcome back!"
+    def _welcome(self):
+        if self.conversations and self.conversations[-1]["date"] == get_today() and self.conversations[-1]["conversation"]:
+            # Welcome back message
+            template = self.prompt_templates.get_prompt_template(self.prompt_templates.WELCOME_MESSAGE_CONTINUE_CONVERSATION,
+                                                                 human_prefix=self.human_prefix, ai_prefix=self.ai_prefix)
+            prompt = PromptTemplate.from_template(template)
+            prompt_input = {
+                "patient_info": self.patient_info,
+                "topics": self.topics,
+                "conversation":  self._conversation_to_string(self.conversations[-1]["conversation"])
+            }
         else:
-            msg = "Hi! Please tell me about your day, or tell me how you are feeling "
+            print("starting a new")
+            # Welcome new conversation message. 
+            template = self.prompt_templates.get_prompt_template(self.prompt_templates.WELCOME_MESSAGE_NEW_CONVERSATION,
+                                                                 human_prefix=self.human_prefix, ai_prefix=self.ai_prefix)
+            prompt = PromptTemplate.from_template(template)
+            prompt_input = {
+                "patient_info": self.patient_info,
+                "topics": self.topics,
+            }
 
-        return msg
+        chain = LLMChain(llm=self.model, prompt=prompt)
+        out = chain(prompt_input)
+        print(out)
+        return out
+
+
+    def welcome(self, streaming=True):
+        if not streaming:
+            self.model.streaming = False
+            self.model.callbacks = []
+            return self._welcome()["text"]
+        else:
+            self.model.streaming = True
+            # COPY from LlamaIndex
+            handler = StreamingGeneratorCallbackHandler()
+            self.model.callbacks = [handler]
+            thread = Thread(target=self._welcome, args=[], kwargs={})
+            thread.start()
+            response_gen = handler.get_response_gen()
+            return response_gen
+
 
     def chat(self, message, streaming):
         if not streaming:
