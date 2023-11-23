@@ -107,7 +107,7 @@ def prepare_topic(userId, date, cached=True):
     if len(raw_conversations) == 0:
         return ""
     
-    if raw_conversations[-1]["date"] == date and raw_conversations[-1]["topicSuggestions"]:
+    if raw_conversations[-1]["date"] == date and raw_conversations[-1].get("topicSuggestions", []):
         print("Using cached topic suggestions")
         return raw_conversations[-1]["topicSuggestions"]
 
@@ -230,5 +230,5 @@ def process_data_for_demo():
         insights_from_description(userId)
         
         # prepare_topic 
-        print("Prepare topics for initialise the personalised converssation with the patient")
+        print("Let AI preparing topics for initialising the personalised converssation with the patient")
         prepare_topic(userId, get_today())
