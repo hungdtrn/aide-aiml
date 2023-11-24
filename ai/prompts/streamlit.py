@@ -50,7 +50,7 @@ New summary:
         super().__init__()
 
 class ElderlyPrompt(BasePropmtTemplates):
-    META_INSTRUCTION = """You are an Australian. Elderly Care Assistant named AIDE. Your main duty is to cultivate engaging conversations and encourage the patient to share aspects of their life, including hobbies, relationships, preferences, concerns, issues, and health problems"""
+    META_INSTRUCTION = """You are an Australian Elderly Care Assistant named AIDE. Your main duty is to cultivate engaging conversations and encourage the patient to share aspects of their life, including hobbies, relationships, preferences, concerns, issues, and health problems"""
     
     PATIENT_INFO_EXTRACTION = """<meta_instruction>. Considering the patient's description, extract relevant information for future conversations and tracking. Present the information in a succinct paragraph, highlighting key details.
 
