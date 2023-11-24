@@ -2,6 +2,7 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
+import random
 import time
 from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
@@ -81,18 +82,23 @@ class BaseModel:
 
     
     def _chat(self, message, **kwargs):
+        random.shuffle(self.topics)
         # Get the prompt templates based on (1) the device and (2) the client
         template_head = self.prompt_templates.get_prompt_template(self.prompt_templates.CHAT_HEAD,
                                                   human_prefix=self.human_prefix, ai_prefix=self.ai_prefix)
         template_body = self.prompt_templates.get_prompt_template(self.prompt_templates.CHAT_BODY,
                                                                   human_prefix=self.human_prefix, ai_prefix=self.ai_prefix)
         
-        context = self.retriever.query(message)
-        
+        if self.conversations:
+            context = self.retriever.query(message)
+            context = "\n".join(context)
+        else:
+            context = ""
+            
         template_head = template_head.format(
             patient_info=self.patient_info,
-            retrive_context="\n".join(context),
-            suggested_topics=self.topics,
+            retrive_context=context,
+            suggested_topics="\n".join(self.topics),
             now=get_now(),
         )
 
@@ -109,6 +115,7 @@ class BaseModel:
 
 
     def _welcome(self):
+        random.shuffle(self.topics)
         if self.conversations and self.conversations[-1]["date"] == get_today() and self.conversations[-1]["conversation"]:
             # Welcome back message
             template = self.prompt_templates.get_prompt_template(self.prompt_templates.WELCOME_MESSAGE_CONTINUE_CONVERSATION,
@@ -117,7 +124,7 @@ class BaseModel:
             prompt_input = {
                 "now": get_now(),
                 "patient_info": self.patient_info,
-                "topics": self.topics,
+                "topics": "\n".join(self.topics),
                 "conversation":  self.memory.buffer_as_str,
             }
         else:
@@ -128,7 +135,7 @@ class BaseModel:
             prompt_input = {
                 "now": get_now(),
                 "patient_info": self.patient_info,
-                "topics": self.topics,
+                "topics":  "\n".join(self.topics),
             }
 
         print(prompt_input, prompt)

@@ -294,6 +294,9 @@ def process_data_for_demo():
     def _patch_conversation(userId):
         conversations = storage.readConversation(userId)
         for date in conversations:
+            if "topicSuggestions" in date and type(date["topicSuggestions"]) == str:
+                date["topicSuggestions"] = [date["topicSuggestions"]]
+            
             for conversation in date["conversation"]:
                 if "content" not in conversation:
                     if "human" in conversation:

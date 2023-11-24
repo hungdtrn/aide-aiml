@@ -33,6 +33,10 @@ class Retriever:
             for chunk in chunks:
                 documents.append(Document(page_content=chunk))
 
+        if not documents:
+            self.db = Chroma(embedding_function=self.embedding)
+            return 
+
         if vector_db_type == "chroma":
         # Ensure that a recent version of SQLite3 is used
         # Chroma requires SQLite3 version >= 3.35.0
