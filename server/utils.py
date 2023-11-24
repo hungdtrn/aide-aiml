@@ -286,7 +286,7 @@ def _compute_indicator_all_previous_conversation(userId, cached=True):
 
 
 def process_data_for_demo():
-    cached = False
+    cached = True
     def _patch_conversation(userId):
         conversations = storage.readConversation(userId)
         for date in conversations:
