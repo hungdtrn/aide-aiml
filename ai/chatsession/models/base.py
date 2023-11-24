@@ -16,7 +16,7 @@ from queue import Queue
 from threading import Event, Thread
 from typing import Any, Generator, Union
 from prompts import get_template
-from ai_utils import get_today, run_with_timeout_retry, loadAllConversationsToMemory
+from ai_utils import get_today, get_now, run_with_timeout_retry, loadAllConversationsToMemory
 
 
 class StreamingGeneratorCallbackHandler(BaseCallbackHandler):
@@ -87,7 +87,7 @@ class BaseModel:
             patient_info=self.patient_info,
             retrive_context="",
             suggested_topics=self.topics,
-            today=get_today(),
+            now=get_now(),
         )
 
         template = template_head + template_body
@@ -109,21 +109,23 @@ class BaseModel:
                                                                  human_prefix=self.human_prefix, ai_prefix=self.ai_prefix)
             prompt = PromptTemplate.from_template(template)
             prompt_input = {
+                "now": get_now(),
                 "patient_info": self.patient_info,
                 "topics": self.topics,
                 "conversation":  self.memory.buffer_as_str,
             }
         else:
-            print("starting a new")
             # Welcome new conversation message. 
             template = self.prompt_templates.get_prompt_template(self.prompt_templates.WELCOME_MESSAGE_NEW_CONVERSATION,
                                                                  human_prefix=self.human_prefix, ai_prefix=self.ai_prefix)
             prompt = PromptTemplate.from_template(template)
             prompt_input = {
+                "now": get_now(),
                 "patient_info": self.patient_info,
                 "topics": self.topics,
             }
 
+        print(prompt_input, prompt)
         chain = LLMChain(llm=self.model, prompt=prompt)
         out = run_with_timeout_retry(chain, prompt_input, timeout=30)
         return out

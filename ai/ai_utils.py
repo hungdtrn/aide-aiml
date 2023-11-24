@@ -38,7 +38,7 @@ def loadConversationOneDay(conversation, ai_prefix, human_prefix):
             currentDict = {
                 "type": k,
                 "data": {
-                    "content": v,
+                    "content": "{} ({})".format(v, chat["time"],),
                     "additional_kwargs": {}
                 }
             }
@@ -59,9 +59,9 @@ def conversation_to_string(conversation, to_string=True):
         for k, v in line["content"].items():
 
             if to_string:
-                out += "{}: {}\n".format(k, v)
+                out += "{}: {} ({})\n".format(k, v, line["time"])
             else:
-                out.append("{}: {}".format(k, v))
+                out.append("{}: {} ({})".format(k, v, line["time"]))
 
     return out
 

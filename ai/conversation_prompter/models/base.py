@@ -15,7 +15,7 @@ from threading import Event, Thread
 from typing import Any, Generator, Union
 from prompts import get_template
 
-from ai_utils import run_with_timeout_retry, conversation_to_string
+from ai_utils import run_with_timeout_retry, conversation_to_string, get_today
 
 class BaseModel:
     human_prefix = ""
@@ -57,12 +57,14 @@ class BaseModel:
 
     def insights_from_conversation(self, conversation):
         conversation = conversation_to_string(conversation)
+        # print(conversation)
         conversation_info_template = self.prompt_templates.get_prompt_template(self.prompt_templates.CONVERSATION_INFO_EXTRACTION,
                                                                             human_prefix=self.human_prefix,
                                                                             ai_prefix=self.ai_prefix)
         conversation_info_prompt = PromptTemplate(input_variables=["conversation"],
                                                 template=conversation_info_template)
         conversation_info_chain = LLMChain(llm=self.model, prompt=conversation_info_prompt)
+        # print(conversation_info_prompt)
         conversation_info = run_with_timeout_retry(conversation_info_chain, {"conversation": conversation})["text"]
         return self._convert_insights_to_list(conversation_info)
 
@@ -78,7 +80,8 @@ class BaseModel:
                                                     template=topic_suggestion_template)
             topic_suggestion_chain = LLMChain(llm=self.model, prompt=topic_suggestion_prompt)
             input_dict = {"patient_info": patient_info,
-                                                       "n_topics": self.n_topics}
+                          "n_topics": self.n_topics,
+                          "today": get_today()}
         else:
             topic_suggestion_template = self.prompt_templates.get_prompt_template(self.prompt_templates.TOPIC_SUGGESTION_WITH_CONVERSATION,
                                                                                         human_prefix=self.human_prefix,
@@ -87,8 +90,9 @@ class BaseModel:
                                                     template=topic_suggestion_template)
             topic_suggestion_chain = LLMChain(llm=self.model, prompt=topic_suggestion_prompt)
             input_dict = {"patient_info": patient_info,
-                                                       "previous_insight": conv_info,
-                                                       "n_topics": self.n_topics}
+                          "previous_insight": conv_info,
+                          "n_topics": self.n_topics,
+                          "today": get_today()}
 
         topic_suggestion = run_with_timeout_retry(topic_suggestion_chain, input_dict)["text"]
         print(topic_suggestion)
