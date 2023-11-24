@@ -202,7 +202,7 @@ def chat():
         response = app.response_class(generate(), mimetype='text/text')
         return response
     else:
-        response = session.chat(message)
+        response = session.chat(message, streaming=False)
         conversations[-1]["conversation"].append({
             "time": get_now(),
             "content": {session.ai_prefix: response,},
