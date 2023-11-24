@@ -33,17 +33,25 @@ def run_with_timeout_retry(chain, chain_input, timeout=TIMEOUT):
             time.sleep(1)
     raise Exception("Timeout")
 
-def loadConversationOneDay(conversation, ai_prefix, human_prefix):
+def loadConversationOneDay(conversation, ai_prefix, human_prefix, add_date=True):
+    # Force add date to False to avoid retruning the timestamp on the output
+    # TODO: Might reconsider again when want LLM to be time-sensitive.
+    add_date = False
+
     out = []
     for chat in conversation["conversation"]:
         for k, v in chat["content"].items():
             if k.lower() != ai_prefix.lower() and k.lower() != human_prefix.lower():
                 continue
 
+            if add_date:
+                content = "{} ({})".format(v, chat["time"],)
+            else:
+                content = v
             currentDict = {
                 "type": k,
                 "data": {
-                    "content": "{} ({})".format(v, chat["time"],),
+                    "content": content,
                     "additional_kwargs": {}
                 }
             }
@@ -55,6 +63,10 @@ def loadConversationOneDay(conversation, ai_prefix, human_prefix):
 def conversation_to_string(conversation, to_string=False, add_date=True):
     """ Convert the converstation dicct list to covnersation string list
     """
+    # Force add date to False to avoid retruning the timestamp on the output
+    # TODO: Might reconsider again when want LLM to be time-sensitive.
+    add_date = False
+
     if to_string:
         out = ""
     else:
