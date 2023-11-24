@@ -8,6 +8,7 @@ rm -fr $BUILD_DIR
 mkdir $BUILD_DIR
 cp -r $SERVER_DIR/../ai $BUILD_DIR
 cp $SERVER_DIR/* $BUILD_DIR
+cp $SERVER_DIR/../requirements.txt $BUILD_DIR 
 gcloud run deploy aide-server --project $PROJECT --region=$REGION --allow-unauthenticated \
     --update-secrets=OPENAI_API_KEY=OPENAI_API_KEY:latest \
     --set-env-vars "MODEL=gpt-3.5-turbo" \
