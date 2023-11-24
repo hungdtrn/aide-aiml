@@ -10,7 +10,7 @@ else:
 
 
 CACHE_NUM_ENTRY = 1
-CACHE_TTL = 3600
+CACHE_TTL = 10
 
 def set_url(url):
     """
