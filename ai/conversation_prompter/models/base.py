@@ -84,7 +84,6 @@ class BaseModel:
 
         return [conversation_info]
 
-
     def topic_suggestions(self, patient_info, conversation_info):
         conv_info = self._append_date_to_info_list(conversation_info)
         

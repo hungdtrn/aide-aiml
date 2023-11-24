@@ -12,5 +12,7 @@ class ChatGPT(BaseModel):
         super().__init__(retriever, conversations, carerInput, medicalInput, device)
 
         api_key = os.getenv("OPENAI_API_KEY")
+        temperature = os.getenv("OPENAI_TEMPERATURE", 0.7)
         openai.api_key = api_key    
-        self.model = ChatOpenAI(temperature=.7, model_name="gpt-3.5-turbo")
+        print(temperature)
+        self.model = ChatOpenAI(temperature=temperature, model_name="gpt-3.5-turbo")
