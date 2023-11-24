@@ -1,0 +1,37 @@
+[
+    {
+        "id": 99,
+        "date": "2023-11-19",
+        "summary": "Sarah expressed heightened anxiety today, building on the unease noted in the previous session. She reported increased work stress and persistent tension headaches. Socially, she continued to feel isolated, citing challenges in connecting with friends.",
+        "aiVersion": "v1",
+        "tokenCnt": 0
+    },
+    {
+      "id": 99,
+      "date": "2023-11-20",
+      "summary": "Sarah shared a mix of emotions today, an improvement from the heightened anxiety reported yesterday. She noted some success in managing stress but acknowledged ongoing feelings of sadness and isolation. Physically, she mentioned better sleep patterns.",
+      "aiVersion": "v1",
+      "tokenCnt": 0
+    },
+    {
+      "id": 99,
+      "date": "2023-11-21",
+      "summary": "Sarah presented today with an improved mood, building on the positive shift noted in the previous session. She reported a decrease in stress levels, attributed to engaging in a new hobby. Physical symptoms, such as muscle tension, were less prominent. Socially, she mentioned reconnecting with friends.",
+      "aiVersion": "v1",
+      "tokenCnt": 0
+    },
+    {
+      "id": 99,
+      "date": "2023-11-22",
+      "summary": "Sarah conveyed frustration today, indicating a shift from the improved mood reported yesterday. She described heightened anxiety related to work demands, increased fatigue, and difficulties concentrating. Socially, she expressed feeling overwhelmed and withdrew from interactions.",
+      "aiVersion": "v1",
+      "tokenCnt": 0
+    },
+    {
+      "id": 99,
+      "date": "2023-11-23",
+      "summary": "Sarah presented today with a more optimistic outlook, contrasting with the frustration reported yesterday. She reported successful implementation of stress management techniques, leading to a decrease in overall anxiety levels. Physically, she noted improved sleep quality. Socially, she expressed a sense of accomplishment in rebuilding connections with family",
+      "aiVersion": "v1",
+      "tokenCnt": 0
+    }
+]

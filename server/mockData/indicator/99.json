@@ -1,0 +1,56 @@
+[{
+    "id": 99,
+    "date": "2023-11-19",
+    "aiVersion": "v1",
+    "tokenCnt": 0,
+    "indicators": {
+        "mental_heath": 4,
+        "physical_heath": 5,
+        "social_heath": 3
+    }
+},
+{
+  "id": 99,
+  "date": "2023-11-20",
+  "aiVersion": "v1",
+  "tokenCnt": 0,
+  "indicators": {
+    "mental_heath": 4,
+    "physical_heath": 5,
+    "social_heath": 4
+  }
+},
+{
+  "id": 99,
+  "date": "2023-11-21",
+  "aiVersion": "v1",
+  "tokenCnt": 0,
+  "indicators": {
+    "mental_heath": 4,
+    "physical_heath": 4,
+    "social_heath": 3
+  }
+},
+{
+  "id": 99,
+  "date": "2023-11-22",
+  "aiVersion": "v1",
+  "tokenCnt": 0,
+  "indicators": {
+    "mental_heath": 3,
+    "physical_heath": 4,
+    "social_heath": 3
+  }
+},
+{
+  "id": 99,
+  "date": "2023-11-23",
+  "aiVersion": "v1",
+  "tokenCnt": 0,
+  "indicators": {
+    "mental_heath": 2,
+    "physical_heath": 3,
+    "social_heath": 2
+  }
+}
+]
