@@ -12,11 +12,11 @@ st.text("Medical page")
 st.header("Medical summary")
 
 @st.cache_data(ttl=CACHE_TTL)
-def querying_summary():
+def querying_summary(userID):
     return dailySummary(obj =  {"userId": userID, "n" : num_tabs})
 
 @st.cache_data(ttl=CACHE_TTL)
-def quyerying_indicator():
+def quyerying_indicator(userID):
     return dailyIndicator(obj = {"userId": userID, "n" : 5})
 
 
@@ -53,7 +53,7 @@ else:
 if st.checkbox('View daily Summary', disabled = checkbox_disabled):
 
     num_tabs = 5
-    response = querying_summary()
+    response = querying_summary(userID)
     df = pd.DataFrame.from_dict(response['response'])
     # Check dataframe length, and if shorter than n, return only that many tabs
     if len(df) < num_tabs:
@@ -80,7 +80,7 @@ if st.checkbox('View daily Summary', disabled = checkbox_disabled):
 
 if st.checkbox('View Indicator Trends', disabled = checkbox_disabled):
     try:
-        indicator = quyerying_indicator()
+        indicator = quyerying_indicator(userID)
         #--- Indicator trends---#
         st.header("Indicator Trends")
 
