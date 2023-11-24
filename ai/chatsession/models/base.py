@@ -60,22 +60,24 @@ class BaseModel:
     model = None
     NUM_SHORT_TERM_CONVERSATION = 5
 
-    def __init__(self, retriever, conversations, patient_info, topics) -> None:
+    def __init__(self, retriever, conversations, patient_info, topics, device="streamlit") -> None:
         load_dotenv()
-        self.prompt_templates = get_template()
+        self.prompt_templates = get_template(device=device)
         self.retriever = retriever
 
         self.patient_info = patient_info
         self.topics = topics
         
         self.conversations = conversations
+        self.reload_memory(conversations)
 
+        
+    def reload_memory(self, conversations):
         if conversations:
             self.memory = ConversationBufferWindowMemory(chat_memory=loadAllConversationsToMemory(conversations, self.ai_prefix, self.human_prefix),
                                                          k=self.NUM_SHORT_TERM_CONVERSATION)
         else:
             self.memory = ConversationBufferWindowMemory(k=self.NUM_SHORT_TERM_CONVERSATION)
-        
 
     
     def _chat(self, message, **kwargs):
@@ -168,3 +170,4 @@ class BaseModel:
             response_gen = handler.get_response_gen()
             return response_gen
 
+    

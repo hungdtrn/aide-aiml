@@ -44,7 +44,7 @@ chatSessionDict = {}
 # The retrieval/memory things could be done later. At first, just use the context from the previous conversations. 
 # Should the pre-compute the welcome messages? Let decide based on the latency of the welcome api
 
-def _get_chatsession_or_create(userId):
+def _get_chatsession_or_create(userId, uiType="streamlit"):
     if userId in chatSessionDict:
         return chatSessionDict[userId]
     else:
@@ -59,7 +59,8 @@ def _get_chatsession_or_create(userId):
                                                      retriever=retrievers[userId],
                                                      conversations=conversations,
                                                      patient_info=patient_description,
-                                                     topics=topics)
+                                                     topics=topics,
+                                                     device=uiType)
         
         return chatSessionDict[userId]
     
@@ -104,21 +105,37 @@ def createUser():
 
 @app.route("/welcome", methods=['POST'])
 def welcome():
+    def _save_welcome(conversation, welcome):
+        "avoid saving multiple conversation"
+        if not conversation["conversation"] or "human" in conversation["conversation"][-1]["content"]:
+            conversation["conversation"].append({
+                "time": get_now(),
+                "content": {session.ai_prefix: welcome,},
+                "tokenCnt": 0,
+            })
+        else:
+            conversation["conversation"][-1] = {
+                "time": get_now(),
+                "content": {session.ai_prefix: welcome,},
+                "tokenCnt": 0,
+            }
+
+        return conversation
+
     """ Get the welcome message from the server
     """
     userId = request.json["userId"]
+    uiType = request.json.get("uiType", "streamlit")
+
     streaming = request.json.get("streaming", False)
 
-    session = _get_chatsession_or_create(userId)
+    session = _get_chatsession_or_create(userId, uiType)
     conversations = get_conversations(userId)
+    session.reload_memory(conversations)
 
     response = session.welcome(streaming=streaming)
     if not streaming:
-        conversations[-1]["conversation"].append({
-            "time": get_now(),
-            "content": {session.ai_prefix: response,},
-            "tokenCnt": 0,
-        })
+        conversations[-1] = _save_welcome(conversations[-1], response)
         storage.writeConversation(userId, conversations)
         return {
             "response": response
@@ -130,11 +147,7 @@ def welcome():
                 msg += word
                 yield word
             msg.strip()
-            conversations[-1]["conversation"].append({
-                "time": get_now(),
-                "content": {session.ai_prefix: msg,},
-                "tokenCnt": 0,
-            })
+            conversations[-1] = _save_welcome(conversations[-1], msg)
             storage.writeConversation(userId, conversations)
             yield ""
 
@@ -146,10 +159,11 @@ def chat():
     """ Chat with the language model
     """
     streaming = request.json.get("streaming", False)
+    uiType = request.json.get("uiType", "streamlit")
 
     # Get the chat session
     userId = request.json["userId"]
-    session = _get_chatsession_or_create(userId)
+    session = _get_chatsession_or_create(userId, uiType)
     message = request.json["message"]
 
     # Get the conversation history
