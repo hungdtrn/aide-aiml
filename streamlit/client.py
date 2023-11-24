@@ -1,8 +1,13 @@
+import os
+from dotenv import load_dotenv
 import requests
 import json
+load_dotenv()
+if os.getenv("APPLICATION_SERVER")=="GCP":
+    server_url = os.getenv("GCP_SERVER")
+else:
+    server_url = os.getenv("LOCAL_SERVER")
 
-server_url = "http://127.0.0.1:8080"
-# server_url = "https://aide-server-ogdrzymura-km.a.run.app"
 
 CACHE_NUM_ENTRY = 1
 CACHE_TTL = 3600
