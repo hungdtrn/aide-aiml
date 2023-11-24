@@ -24,6 +24,7 @@ class StreamingGeneratorCallbackHandler(BaseCallbackHandler):
 
     def __init__(self) -> None:
         self._token_queue: Queue = Queue()
+        self.llm_response = None
         self._done = Event()
 
     def __deepcopy__(self, memo: Any) -> "StreamingGeneratorCallbackHandler":
@@ -35,6 +36,7 @@ class StreamingGeneratorCallbackHandler(BaseCallbackHandler):
         self._token_queue.put_nowait(token)
 
     def on_llm_end(self, response: LLMResult, **kwargs: Any) -> None:
+        self.llm_response = response
         self._done.set()
 
     def on_llm_error(
@@ -46,8 +48,9 @@ class StreamingGeneratorCallbackHandler(BaseCallbackHandler):
         while True:
             if not self._token_queue.empty():
                 token = self._token_queue.get_nowait()
-                yield token
+                yield token, self.llm_response
             elif self._done.is_set():
+                yield "", self.llm_response
                 break
 
 
@@ -90,12 +93,12 @@ class BaseModel:
         template = template_head + template_body
 
         prompt = PromptTemplate.from_template(template)
-        print(prompt)
         chain = ConversationChain(
             prompt=prompt,
             llm=self.model,
             memory=self.memory
         )
+        print(chain.prompt, self.memory.buffer_as_str)
         return run_with_timeout_retry(chain, message, timeout=20)
 
 

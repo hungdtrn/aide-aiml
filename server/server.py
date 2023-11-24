@@ -158,14 +158,32 @@ def chat():
         response_gen = session.chat(message, streaming=True)
         def generate():
             msg = ""
-            for word in response_gen:
+            is_finished = True
+
+
+            for (word, response) in response_gen:
                 msg += word
                 yield word
             msg.strip()
+
+            for info in response.generations:
+                gen_info = info[0].generation_info
+                is_finished = is_finished & (gen_info["finish_reason"] == "stop")
+
+            if not is_finished:
+                print("Trying to continue the response")
+                continue_response_gen = session.chat("Please continue", streaming=True)
+                for (word, response) in continue_response_gen:
+                    msg += word
+                    yield word
+                msg.strip()
+
             conversations[-1]["conversation"].append({
                 "time": get_now(),
                 "content": {session.ai_prefix: msg,},
                 "tokenCnt": 0,
+                "is_finished": is_finished,
+                "gen_info": gen_info,
             })
             storage.writeConversation(userId, conversations)
             yield ""
