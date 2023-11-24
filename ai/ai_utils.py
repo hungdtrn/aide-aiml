@@ -11,7 +11,7 @@ from langchain.memory.chat_message_histories.in_memory import ChatMessageHistory
 from openai.error import Timeout as OpenAITimeoutError
 
 TIMEOUT = 120
-TIMEOUT_RETRY = 3
+TIMEOUT_RETRY = 4
 PREV_CONV_IN_TOPIC = 3
 RANDOM_CONV_IN_TOPIC = 3
 MAX_CONV_LENGTH = 60
