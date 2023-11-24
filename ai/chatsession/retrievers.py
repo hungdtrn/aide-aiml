@@ -34,6 +34,11 @@ class Retriever:
                 documents.append(Document(page_content=chunk))
                 
         if vector_db_type == "chroma":
+        # Ensure that a recent version of SQLite3 is used
+        # Chroma requires SQLite3 version >= 3.35.0
+        # See https://gist.github.com/defulmere/8b9695e415a44271061cc8e272f3c300
+            __import__("pysqlite3")
+            sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
             self.db = Chroma.from_documents(documents, self.embedding)
         else:
             raise Exception("Not implemented")
