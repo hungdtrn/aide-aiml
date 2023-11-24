@@ -10,7 +10,7 @@ from ai import VERSION, MODELS, build_chat_session, build_summariser, build_conv
 AI_MODEL = MODELS.CHATGPT
 
 
-def insights_from_description(userId, conversation_prompter=None):
+def insights_from_description(userId, conversation_prompter=None, cached=True):
     user = storage.readUser(userId)
     if not user:
         user = {"userId": userId, 
@@ -110,7 +110,7 @@ def prepare_topic(userId, date, cached=True):
     if len(raw_conversations) == 0:
         return ""
     
-    if raw_conversations[-1]["date"] == date and raw_conversations[-1].get("topicSuggestions", []):
+    if raw_conversations[-1]["date"] == date and raw_conversations[-1].get("topicSuggestions", []) and cached:
         print("Using cached topic suggestions")
         return raw_conversations[-1]["topicSuggestions"]
 
@@ -181,8 +181,8 @@ def prepare_topic(userId, date, cached=True):
 
     conversation_prompter = build_conversation_prompter(AI_MODEL)
     print("----- Extracting insights from previous conversations -------")
-    convs = [insights_from_conversation(conversation, conversation_prompter=conversation_prompter) for conversation in random_conv]
-    convs.extend([insights_from_conversation(conversation, conversation_prompter=conversation_prompter) for conversation in last_conv])
+    convs = [insights_from_conversation(conversation, conversation_prompter=conversation_prompter, cached=cached) for conversation in random_conv]
+    convs.extend([insights_from_conversation(conversation, conversation_prompter=conversation_prompter, cached=cached) for conversation in last_conv])
 
     storage.writeConversation(userId, raw_conversations)
 
@@ -286,6 +286,7 @@ def _compute_indicator_all_previous_conversation(userId, cached=True):
 
 
 def process_data_for_demo():
+    cached = False
     def _patch_conversation(userId):
         conversations = storage.readConversation(userId)
         for date in conversations:
@@ -311,13 +312,13 @@ def process_data_for_demo():
         _patch_conversation(userId)
 
         print("2. Extract insights from the medical and carer inputs")
-        insights_from_description(userId)
+        insights_from_description(userId, cached=cached)
         
         # prepare_topic 
         print("3. Let AI preparing topics for initialising the personalised converssation with the patient")
         print("For the first running of the day, it might take a while to run...")
         print("This feature will be called once a day!")
-        prepare_topic(userId, get_today())
+        prepare_topic(userId, get_today(), cached=cached)
 
         print("4. Summarize all conversatons of previous days")
         _summarize_all_previous_conversation(userId, cached=True)
