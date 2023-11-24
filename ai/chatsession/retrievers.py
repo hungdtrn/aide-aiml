@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 from datetime import datetime
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -28,10 +29,13 @@ class Retriever:
 
         documents = []
         for conversation in conversations:
-            text = "\n".join(conversation_to_string(conversation, to_string=False))
-            chunks = self.text_splitter.split_text(text)
-            for chunk in chunks:
-                documents.append(Document(page_content=chunk))
+            text = conversation.get("information", [])
+            text = "\n".join(text)
+
+            if text:
+                chunks = self.text_splitter.split_text(text)
+                for chunk in chunks:
+                    documents.append(Document(page_content=chunk))
 
         if not documents:
             self.db = Chroma(embedding_function=self.embedding)

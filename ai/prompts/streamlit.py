@@ -138,18 +138,18 @@ Previous conversations:
 """
 
     # Currently the ConversationChain does not allow for custom variable. Implement some workaroud
-    CHAT_HEAD = """<meta_instruction>. Maintain the conversation with empathy, helpfulness, and a touch of humor, taking into consideration the patient's information and the provided context.
+    CHAT_HEAD = """<meta_instruction>. Maintain the conversation with empathy, helpfulness, and a touch of humor, taking into consideration the patient's information and the provided context. Keep it brief in at most two sentences. 
 
 Current time is:
 {now}
 
-Patient information:
-{patient_info}
-
 Suggested Topics:
 {suggested_topics}
 
-Previous conversations:
+Patient information:
+{patient_info}
+
+Related information:
 {retrive_context}"""
 
     CHAT_BODY = """
