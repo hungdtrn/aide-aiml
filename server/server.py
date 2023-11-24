@@ -153,7 +153,6 @@ def welcome():
 
         return app.response_class(generate(), mimetype='text/text')
 
-
 @app.route("/chat", methods=['POST'])
 def chat():
     """ Chat with the language model
@@ -229,6 +228,22 @@ def chat():
             "response": response
         }
 
+
+@app.route("/chat_history", methods=["POST"])
+def chat_history():
+    # Get the chat session
+    userId = request.json["userId"]
+    date = request.json["date"]
+    conversations = get_conversations(userId)
+    conv = []
+    for conversation in conversations:
+        if conversation["date"] == date:
+            conv = conversation["conversation"]
+            break
+
+    return {
+        "response": conv
+    }
 
 @app.route("/scheduledDailySummary", methods=['GET'])
 def scheduledDailySummary():

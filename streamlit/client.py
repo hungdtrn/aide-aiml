@@ -10,7 +10,7 @@ else:
 
 
 CACHE_NUM_ENTRY = 1
-CACHE_TTL = 3600
+CACHE_TTL = 10
 
 def set_url(url):
     """
@@ -69,3 +69,6 @@ def chatStream(obj):
     """
     obj["streaming"] = True
     return post("chat", server_url, obj, stream=True)
+
+def get_chat_history(obj):
+    return post("chat_history", server_url, obj)
