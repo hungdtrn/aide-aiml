@@ -66,9 +66,6 @@ The Streamlit UI server provides standard web server (HTML / HTTP endpoint) that
 3. Create a new app and link it to the forked repo
 4. Deploy the streamlit app
 
-
-
-
 ### Run the Voice User Interface server
 
 The Voice UI server provides a conversation interface for non-technical users, especially the patient under care.
@@ -155,3 +152,13 @@ gcloud run services delete aide-server --quiet --project $PROJECT --region=$REGI
     cd server
     docker build -f Dockerfile -t aide .
     docker run --rm aide
+
+## Crete .env file
+
+Create a .env file with the following variables:
+
+  APPLICATION_SERVER='GCP' <-- Set as 'local' when testing connection to local server
+  GCP_SERVER_URL="https://aide-server-ogdrzymura-km.a.run.app" <-- replace with your GCP URL
+  LOCAL_SERVER_URL="http://127.0.0.1:8080" <-- replace with your local host server URL
+
+You may need to redeploy your application server and streamlit server for the changes to take effect

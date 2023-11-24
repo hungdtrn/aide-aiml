@@ -223,10 +223,17 @@ def scheduledDailySummary():
     """
     for userId in storage.yesterdaysUsers():
         summary = _userDailySummary(userId)
-        """
-            if summary.value > exceeds threshold 
-                send_email_notification(None, summary)
-        """
+        user = storage.readUser(userId)
+        indicator = storage.readIndicator(userId)
+
+        if false: # Disable email sending
+            if indicator.mental_heath < 0:
+                send_email_notification(user, "Mental health has steadily declined")
+            if indicator.physical_heath < 0:
+                send_email_notification(user, "Physical health has steadily declined")
+            if indicator.social_heath < 0:
+                send_email_notification(user, "Social health has steadily declined")
+
     return "Success"
 
 @app.route("/dailySummary", methods=['POST'])
