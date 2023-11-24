@@ -74,6 +74,7 @@ class BaseModel:
 
         
     def reload_memory(self, conversations):
+        self.conversations = conversations
         if conversations:
             self.memory = ConversationBufferWindowMemory(chat_memory=loadAllConversationsToMemory(conversations, self.ai_prefix, self.human_prefix),
                                                          k=self.NUM_SHORT_TERM_CONVERSATION)
