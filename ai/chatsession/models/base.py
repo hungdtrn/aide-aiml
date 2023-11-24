@@ -84,9 +84,12 @@ class BaseModel:
                                                   human_prefix=self.human_prefix, ai_prefix=self.ai_prefix)
         template_body = self.prompt_templates.get_prompt_template(self.prompt_templates.CHAT_BODY,
                                                                   human_prefix=self.human_prefix, ai_prefix=self.ai_prefix)
+        
+        context = self.retriever.query(message)
+        
         template_head = template_head.format(
             patient_info=self.patient_info,
-            retrive_context="",
+            retrive_context="\n".join(context),
             suggested_topics=self.topics,
             now=get_now(),
         )

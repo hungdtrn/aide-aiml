@@ -15,9 +15,10 @@ TIMEOUT_RETRY = 4
 PREV_CONV_IN_TOPIC = 3
 RANDOM_CONV_IN_TOPIC = 3
 MAX_CONV_LENGTH = 60
+DATE_FORMAT = "%Y-%m-%d"
 
 def get_today():
-    return datetime.datetime.now().strftime("%Y-%m-%d")
+    return datetime.datetime.now().strftime(DATE_FORMAT)
 
 def get_now():
     return datetime.datetime.now().isoformat()
@@ -51,7 +52,7 @@ def loadConversationOneDay(conversation, ai_prefix, human_prefix):
     return out
 
 
-def conversation_to_string(conversation, to_string=True):
+def conversation_to_string(conversation, to_string=False, add_date=True):
     """ Convert the converstation dicct list to covnersation string list
     """
     if to_string:
@@ -61,11 +62,15 @@ def conversation_to_string(conversation, to_string=True):
 
     for line in conversation["conversation"]:
         for k, v in line["content"].items():
+            if add_date:
+                s = "{}: {} ({})\n".format(k, v, line["time"])
+            else:
+                s = "{}: {}\n".format(k, v)
 
             if to_string:
-                out += "{}: {} ({})\n".format(k, v, line["time"])
+                out += s
             else:
-                out.append("{}: {} ({})".format(k, v, line["time"]))
+                out.append(s)
 
     return out
 

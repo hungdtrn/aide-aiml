@@ -1,0 +1,49 @@
+import os
+import sys
+from datetime import datetime
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.vectorstores import Chroma, Qdrant
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.embeddings import CacheBackedEmbeddings, OpenAIEmbeddings
+from langchain.storage import (
+    LocalFileStore,
+)
+from langchain.retrievers import TimeWeightedVectorStoreRetriever
+from langchain.schema import Document
+from ai_utils import conversation_to_string
+CACHED_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                           "cached_embedding")
+from ai.ai_utils import DATE_FORMAT
+
+class Retriever:
+    def __init__(self, conversations, vector_db_type="chroma") -> None:
+        fs = LocalFileStore(CACHED_PATH)
+        underlying_embeddings = OpenAIEmbeddings()
+        self.embedding = CacheBackedEmbeddings.from_bytes_store(
+            underlying_embeddings, fs, namespace=underlying_embeddings.model
+        )
+        self.text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+
+        documents = []
+        for conversation in conversations:
+            text = "\n".join(conversation_to_string(conversation, to_string=False))
+            chunks = self.text_splitter.split_text(text)
+            for chunk in chunks:
+                documents.append(Document(page_content=chunk))
+                
+        if vector_db_type == "chroma":
+            self.db = Chroma.from_documents(documents, self.embedding)
+        else:
+            raise Exception("Not implemented")
+
+    def query(self, query: str, top_k: int = 3):
+        results = self.db.similarity_search(query, k=top_k)
+        return [x.page_content for x in results]
+
+    def add_text(self, text: str):
+        self.db.add_text([text])
+
+def build_retriever(conversations, vector_db_type="chroma"):
+    return Retriever(conversations, vector_db_type)

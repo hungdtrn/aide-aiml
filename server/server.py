@@ -8,16 +8,22 @@ from flask import Flask, jsonify, request, render_template, Response
 import storage
 from send_email import send_email_notification
 from utils import get_now, get_today, insights_from_description, get_conversations, process_data_for_demo, prepare_topic
-from ai import VERSION, MODELS, build_chat_session, build_summariser, build_conversation_prompter
+from ai import VERSION, MODELS, build_chat_session, build_summariser, build_chat_retriever
 
 AI_MODEL = MODELS.CHATGPT
 
 print("----------- Preparing and Processing the data. This may take while --------")
 process_data_for_demo()
+print("----------- Loading previous conversations into long-term memory for information retrieval")
+print("----------- Loading for the demo user -------")
+retrievers = {
+    0: build_chat_retriever(storage.readConversation(0)),
+}
 
 app = Flask(__name__)
 
 chatSessionDict = {}
+
 
 # TODO: Refine chat logics
 
@@ -46,10 +52,15 @@ def _get_chatsession_or_create(userId):
         patient_description = insights_from_description(userId)
         topics = prepare_topic(userId, get_today(), cached=True)
 
-        chatSessionDict[userId] = build_chat_session(AI_MODEL ,
+        if userId not in retrievers:
+            retrievers[userId] = build_chat_retriever(conversations)
+
+        chatSessionDict[userId] = build_chat_session(AI_MODEL,
+                                                     retriever=retrievers[userId],
                                                      conversations=conversations,
                                                      patient_info=patient_description,
                                                      topics=topics)
+        
         return chatSessionDict[userId]
     
 
