@@ -2,13 +2,13 @@ import os
 import requests
 import json
 from client import welcome, set_url, dailySummary, dailyIndicator, chatStream
-
-
+from dotenv import load_dotenv
+load_dotenv()
 
 def unit_tests():
     # Test local server
     print("Testing local server")
-    set_url("http://127.0.0.1:8080")
+    set_url(os.getenv("LOCAL_SERVER_URL"))
     print("Welcome test")
     print(welcome( obj = {"userId": 0}))
     print("Daily summary test")
@@ -20,7 +20,7 @@ def unit_tests():
 
     # Test gcp server
     print("Testing GCP server")
-    set_url("https://aide-server-ogdrzymura-km.a.run.app")
+    set_url(os.getenv("GCP_SERVER_URL"))
     print("Welcome test")
     print(welcome( obj = {"userId": 0}))
     print("Daily summary test")

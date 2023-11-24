@@ -4,9 +4,9 @@ import requests
 import json
 load_dotenv()
 if os.getenv("APPLICATION_SERVER")=="GCP":
-    server_url = os.getenv("GCP_SERVER")
+    server_url = os.getenv("GCP_SERVER_URL")
 else:
-    server_url = os.getenv("LOCAL_SERVER")
+    server_url = os.getenv("LOCAL_SERVER_URL")
 
 
 CACHE_NUM_ENTRY = 1
