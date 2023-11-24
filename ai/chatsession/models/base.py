@@ -60,9 +60,10 @@ class BaseModel:
     model = None
     NUM_SHORT_TERM_CONVERSATION = 5
 
-    def __init__(self, conversations, patient_info, topics) -> None:
+    def __init__(self, retriever, conversations, patient_info, topics) -> None:
         load_dotenv()
         self.prompt_templates = get_template()
+        self.retriever = retriever
 
         self.patient_info = patient_info
         self.topics = topics
