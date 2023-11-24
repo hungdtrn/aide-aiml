@@ -1,4 +1,5 @@
 import time
+import math
 import datetime
 
 from langchain.schema import (
@@ -11,6 +12,9 @@ from openai.error import Timeout as OpenAITimeoutError
 
 TIMEOUT = 120
 TIMEOUT_RETRY = 3
+PREV_CONV_IN_TOPIC = 4
+RANDOM_CONV_IN_TOPIC = 3
+MAX_CONV_LENGTH = 60
 
 def get_today():
     return datetime.datetime.now().strftime("%Y-%m-%d")
@@ -75,3 +79,30 @@ def loadAllConversationsToMemory(conversations, ai_prefix, human_prefix):
     retrieved_messages = messages_from_dict(out)
     retrieved_chat_history = ChatMessageHistory(messages=retrieved_messages)
     return retrieved_chat_history
+
+def progressive_summarise(chain, prev_info, follow_up_conv):
+    print("Progressively summarising")
+    for conv in follow_up_conv:
+        conv = "\n".join(conv)
+        conversation_info = run_with_timeout_retry(chain, {"conversation": conv,
+                                                            "summary": prev_info})["text"]
+        prev_info = conversation_info
+
+    return conversation_info
+
+def chunk_conversation(conversation):
+    follow_up_conv = []
+
+    if len(conversation) > MAX_CONV_LENGTH:
+        print("Converseation is too long, chunking it", len(conversation), MAX_CONV_LENGTH)
+        # In the conversation is too long, progressively summarise the key information
+        num_chunks = math.ceil(len(conversation) / MAX_CONV_LENGTH)
+        
+        for i in range(1, num_chunks):
+            current_conv = conversation[i*MAX_CONV_LENGTH:(i+1)*MAX_CONV_LENGTH]
+            follow_up_conv.append(current_conv)
+    
+        conversation = conversation[:MAX_CONV_LENGTH]
+
+    return conversation, follow_up_conv
+    

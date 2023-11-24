@@ -19,47 +19,61 @@ from queue import Queue
 from threading import Event, Thread
 from typing import Any, Generator, Union
 from prompts import get_template
-from ai_utils import run_with_timeout_retry, conversation_to_string
+from ai_utils import run_with_timeout_retry, conversation_to_string, chunk_conversation, progressive_summarise, MAX_CONV_LENGTH
 
 class BaseModel:
     human_prefix = ""
     ai_prefix = ""
     model = None
-    max_conversation = 30
     def __init__(self) -> None:
         load_dotenv()
         self.prompt_templates = get_template()
     
     def dailySummary(self, conversation):
         conversation = conversation_to_string(conversation, to_string=False)
-        conversation = conversation[-self.max_conversation*2:]
+        conversation, follow_up_conv = chunk_conversation(conversation)
+
         dailySummary_template = self.prompt_templates.get_prompt_template(self.prompt_templates.DAILY_SUMMARY,
                                                         human_prefix=self.human_prefix,
                                                         ai_prefix=self.ai_prefix)
-        dailySummary_prompt = PromptTemplate(input_variables=["new_lines"],
+        dailySummary_prompt = PromptTemplate(input_variables=["conversation"],
                                                      template=dailySummary_template)
 
         conversation_chain = LLMChain(llm=self.model, prompt=dailySummary_prompt)
 
-        dailySummary = run_with_timeout_retry(conversation_chain, {"new_lines": conversation})["text"]
+        dailySummary = run_with_timeout_retry(conversation_chain, {"conversation": "\n".join(conversation)})["text"]
+        
+        if follow_up_conv:
+            devSummary_template = self.prompt_templates.get_prompt_template(self.prompt_templates.DEVELOPMENT_SUMMARY,
+                                                                        human_prefix=self.human_prefix,
+                                                                        ai_prefix=self.ai_prefix)
+            devSummary_prompt = PromptTemplate(template=devSummary_template,
+                                                input_variables=["summary", "conversation"])
+
+            development_chain = LLMChain(llm=self.model, prompt=devSummary_prompt)
+
+            dailySummary = progressive_summarise(development_chain, dailySummary, follow_up_conv)
+
+
         return dailySummary
     
 
     def devSummary(self, pastSummary, conversation):
         conversation = conversation_to_string(conversation, to_string=False)
-        conversation = conversation[-self.max_conversation*2:]
-        
+        conversation, follow_up_conv = chunk_conversation(conversation)
+        follow_up_conv = [conversation] + follow_up_conv
+
         devSummary_template = self.prompt_templates.get_prompt_template(self.prompt_templates.DEVELOPMENT_SUMMARY,
                                                                human_prefix=self.human_prefix,
                                                                ai_prefix=self.ai_prefix)
 
         
         devSummary_prompt = PromptTemplate(template=devSummary_template,
-                                                    input_variables=["summary", "new_lines"])
+                                                    input_variables=["summary", "conversation"])
 
         development_chain = LLMChain(llm=self.model, prompt=devSummary_prompt)
-        devSummary = run_with_timeout_retry(development_chain, {"summary": pastSummary, 
-                                                                "new_lines": conversation})["text"]
+        devSummary = progressive_summarise(development_chain, pastSummary, follow_up_conv)
+
         return devSummary
     
     def computeIndicators(self, dailySummary):

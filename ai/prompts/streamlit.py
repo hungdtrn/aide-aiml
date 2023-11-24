@@ -68,7 +68,7 @@ Current conversation:
     CONVERSATION_INFO_PROGESSIVE_EXTRACTION = """<meta_instruction>. Use information from the current conversation log and previously captured details to extract updated and relevant information for future conversations. Summarize this information in a concise paragraph, emphasizing key details.
 
 Previous details:
-{previous_details}    
+{summary}    
 
 Current conversation:
 {conversation}
@@ -161,7 +161,7 @@ Current conversation:
 
     DAILY_SUMMARY =  """<meta_instruction>. This is a conversation between you and the patient. Summarize the patient's emotional, mental, social, and physical state throughout the day. Use this summary to monitor and track the patient's overall well-being.
 
-{new_lines}
+{conversation}
 """    
 
     DEVELOPMENT_SUMMARY = """<meta_instruction>. This is a conversation between you and the patient for today. Progressively summarize the developemt of the patient's emotional, mental, and physical state of the patient throughout the day, expanding on the previous summary to create a new assessment of their overall well-being.
@@ -183,7 +183,7 @@ Current summary:
 {summary}
 
 New lines of conversation:
-{new_lines}
+{conversation}
 
 New summary:
 """

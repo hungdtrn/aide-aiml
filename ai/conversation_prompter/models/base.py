@@ -15,7 +15,7 @@ from threading import Event, Thread
 from typing import Any, Generator, Union
 from prompts import get_template
 import math
-from ai_utils import run_with_timeout_retry, conversation_to_string, get_today
+from ai_utils import run_with_timeout_retry, conversation_to_string, get_today, progressive_summarise, chunk_conversation, MAX_CONV_LENGTH
 
 class BaseModel:
     human_prefix = ""
@@ -64,28 +64,11 @@ class BaseModel:
                                                 template=progressive_info_template)
         progressive_info_chain = LLMChain(llm=self.model, prompt=progressive_info_prompt)
 
-        for conv in follow_up_conv:
-            conv = "\n".join(conv)
-            conversation_info = run_with_timeout_retry(progressive_info_chain, {"conversation": conv,
-                                                                                "previous_details": prev_info})["text"]
-            prev_info = conversation_info
-
-        return conversation_info
+        return progressive_summarise(progressive_info_chain, prev_info, follow_up_conv)
 
     def insights_from_conversation(self, conversation):
         conversation = conversation_to_string(conversation, to_string=False)
-        n_conv = 60
-        follow_up_conv = []
-
-        if len(conversation) > n_conv:
-            # In the conversation is too long, progressively summarise the key information
-            num_chunks = math.ceil(len(conversation) / n_conv)
-            
-            for i in range(1, num_chunks):
-                current_conv = conversation[i*n_conv:(i+1)*n_conv]
-                follow_up_conv.append(current_conv)
-        
-            conversation = conversation[:n_conv]
+        conversation, follow_up_conv = chunk_conversation(conversation)
 
         conversation = "\n".join(conversation)
         conversation_info_template = self.prompt_templates.get_prompt_template(self.prompt_templates.CONVERSATION_INFO_EXTRACTION,
