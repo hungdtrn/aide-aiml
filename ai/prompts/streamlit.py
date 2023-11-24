@@ -64,6 +64,17 @@ Current conversation:
 {conversation}
 """
 
+
+    CONVERSATION_INFO_PROGESSIVE_EXTRACTION = """<meta_instruction>. Use information from the current conversation log and previously captured details to extract updated and relevant information for future conversations. Summarize this information in a concise paragraph, emphasizing key details.
+
+Previous details:
+{previous_details}    
+
+Current conversation:
+{conversation}
+"""
+
+
     TOPIC_SUGGESTION_WITHOUT_CONVERSATION = """<meta_instruction>. Utilize patient information to generate {n_topics} conversation topics for future interactions, ensuring to exclude disliked topics and avoid repetition. For each topic, collect related context from the provided information that can be used to initiate the conversation. Present the list in bullet points in the provided response format. Present the list in bullet points in the provided response format.
 
 Current date is:

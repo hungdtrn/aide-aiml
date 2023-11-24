@@ -14,7 +14,7 @@ from queue import Queue
 from threading import Event, Thread
 from typing import Any, Generator, Union
 from prompts import get_template
-
+import math
 from ai_utils import run_with_timeout_retry, conversation_to_string, get_today
 
 class BaseModel:
@@ -53,20 +53,53 @@ class BaseModel:
                                              template=patient_info_template)
         patient_info_chain = LLMChain(llm=self.model, prompt=patient_info_prompt)
         patient_info = run_with_timeout_retry(patient_info_chain, {"patient_description": f"{medicalInput}\n\n{carerInput}"})["text"]
-        return self._convert_insights_to_list(patient_info)
+        return [patient_info]
+
+    def _progessive_summary_from_conv(self, prev_info, follow_up_conv):
+        progressive_info_template = self.prompt_templates.get_prompt_template(self.prompt_templates.CONVERSATION_INFO_PROGESSIVE_EXTRACTION,
+                                                                            human_prefix=self.human_prefix,
+                                                                            ai_prefix=self.ai_prefix)
+
+        progressive_info_prompt = PromptTemplate(input_variables=["conversation"],
+                                                template=progressive_info_template)
+        progressive_info_chain = LLMChain(llm=self.model, prompt=progressive_info_prompt)
+
+        for conv in follow_up_conv:
+            conv = "\n".join(conv)
+            conversation_info = run_with_timeout_retry(progressive_info_chain, {"conversation": conv,
+                                                                                "previous_details": prev_info})["text"]
+            prev_info = conversation_info
+
+        return conversation_info
 
     def insights_from_conversation(self, conversation):
-        conversation = conversation_to_string(conversation)
-        # print(conversation)
+        conversation = conversation_to_string(conversation, to_string=False)
+        n_conv = 60
+        follow_up_conv = []
+
+        if len(conversation) > n_conv:
+            # In the conversation is too long, progressively summarise the key information
+            num_chunks = math.ceil(len(conversation) / n_conv)
+            
+            for i in range(1, num_chunks):
+                current_conv = conversation[i*n_conv:(i+1)*n_conv]
+                follow_up_conv.append(current_conv)
+        
+            conversation = conversation[:n_conv]
+
+        conversation = "\n".join(conversation)
         conversation_info_template = self.prompt_templates.get_prompt_template(self.prompt_templates.CONVERSATION_INFO_EXTRACTION,
                                                                             human_prefix=self.human_prefix,
                                                                             ai_prefix=self.ai_prefix)
         conversation_info_prompt = PromptTemplate(input_variables=["conversation"],
                                                 template=conversation_info_template)
         conversation_info_chain = LLMChain(llm=self.model, prompt=conversation_info_prompt)
-        # print(conversation_info_prompt)
         conversation_info = run_with_timeout_retry(conversation_info_chain, {"conversation": conversation})["text"]
-        return self._convert_insights_to_list(conversation_info)
+
+        if follow_up_conv:
+            conversation_info = self._progessive_summary_from_conv(conversation_info, follow_up_conv)
+
+        return [conversation_info]
 
 
     def topic_suggestions(self, patient_info, conversation_info):
