@@ -6,7 +6,7 @@ import datetime
 import storage
 import numpy as np
 import time
-from ai import VERSION, MODELS, build_chat_session, build_summariser, build_conversation_prompter, get_today, get_now
+from ai import VERSION, MODELS, build_chat_session, build_summariser, build_conversation_prompter, get_today, get_now, PREV_CONV_IN_TOPIC, RANDOM_CONV_IN_TOPIC
 AI_MODEL = MODELS.CHATGPT
 
 
@@ -103,8 +103,8 @@ def prepare_topic(userId, date, cached=True):
     OPTIONALS:
     6. Query the relevant contexts for each topics
     """
-    n_prev_conv = 1
-    n_random_conv = 1
+    n_prev_conv = PREV_CONV_IN_TOPIC
+    n_random_conv = RANDOM_CONV_IN_TOPIC
 
     raw_conversations = storage.readConversation(userId)
     if len(raw_conversations) == 0:
@@ -158,7 +158,10 @@ def prepare_topic(userId, date, cached=True):
 
     for i in range(len(conversations)):
         if conversations[i]["date"] == date:
-            last_conv = conversations[i-n_prev_conv:i]
+            if i - n_prev_conv > 0:
+                last_conv = conversations[i-n_prev_conv:i]
+            else:
+                last_conv = conversations[:i]
             next_conv = conversations[i]
             remains = i - n_prev_conv
             if remains > 0:
@@ -180,6 +183,7 @@ def prepare_topic(userId, date, cached=True):
         return next_conv["topicSuggestions"]
 
     conversation_prompter = build_conversation_prompter(AI_MODEL)
+    print(len(random_conv), len(last_conv))
     print("----- Extracting insights from previous conversations -------")
     convs = [insights_from_conversation(conversation, conversation_prompter=conversation_prompter, cached=cached) for conversation in random_conv]
     convs.extend([insights_from_conversation(conversation, conversation_prompter=conversation_prompter, cached=cached) for conversation in last_conv])
