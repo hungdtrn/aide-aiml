@@ -19,6 +19,7 @@ if not os.path.exists(storage.STORAGE_PATH):
     os.mkdir(storage.STORAGE_PATH)
 for folderName in os.listdir(storage.MOCKDATA_PATH):
     if not os.path.exists(os.path.join(storage.STORAGE_PATH, folderName)):
+        print("Coping folder", folderName)
         shutil.copytree(os.path.join(storage.MOCKDATA_PATH, folderName), os.path.join(storage.STORAGE_PATH, folderName))
 
 
@@ -33,26 +34,6 @@ retrievers = {
 app = Flask(__name__)
 
 chatSessionDict = {}
-
-
-# TODO: Refine chat logics
-
-# 1. Implement get topic:
-# a. Load the previous chat from 3 previous days
-# b. Randomly load chat from 4 different days in the past. 
-# c. Prompt to get the topics.
-# d. For each topic. Prompt to get relevant information.
-# e. Save the topics and the information for later use
-# f. Use the topics and the information to generate welcome message
-# => Think of the age care worker rehearse what to do in the next day!
-
-# 2. Re-implement chat
-# a. Inputs: userDetails, prev conversations, current conversations, relevant contexts.
-# b. Retrieve relevant information from the user's message.
-
-# NOTE:
-# The retrieval/memory things could be done later. At first, just use the context from the previous conversations. 
-# Should the pre-compute the welcome messages? Let decide based on the latency of the welcome api
 
 def _get_chatsession_or_create(userId, uiType="streamlit"):
     if userId in chatSessionDict:
