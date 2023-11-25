@@ -1,0 +1,11 @@
+[{
+    "id": 0,
+    "date": "2023-11-19",
+    "aiVersion": "v1",
+    "tokenCnt": 0,
+    "records": {
+        "mental_heath": 0,
+        "physical_heath": 0,
+        "social_heath": 0
+    }
+}]

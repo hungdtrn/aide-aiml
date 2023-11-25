@@ -36,6 +36,14 @@ class BaseModel:
                 newList.append(item)
         return newList
     
+    def _convert_topic_to_list(self, topic):
+        topic = topic.replace("-", "")
+        topic_list = topic.lower().split("topic")
+        topic_list = [topic.strip() for topic in topic_list if topic.strip()]
+        topic_list = ["- Topic{}".format(x) for x in topic_list]
+        return topic_list
+
+    
     def _append_date_to_info_list(self, conversation_info_list):
         """ Append dates to each of the information
         """
@@ -84,7 +92,6 @@ class BaseModel:
 
         return [conversation_info]
 
-
     def topic_suggestions(self, patient_info, conversation_info):
         conv_info = self._append_date_to_info_list(conversation_info)
         
@@ -111,5 +118,6 @@ class BaseModel:
                           "today": get_today()}
 
         topic_suggestion = run_with_timeout_retry(topic_suggestion_chain, input_dict)["text"]
+        topic_suggestion = self._convert_topic_to_list(topic_suggestion)
         print(topic_suggestion)
         return topic_suggestion

@@ -59,7 +59,6 @@ def loadConversationOneDay(conversation, ai_prefix, human_prefix, add_date=True)
     
     return out
 
-
 def conversation_to_string(conversation, to_string=False, add_date=True):
     """ Convert the converstation dicct list to covnersation string list
     """
@@ -85,8 +84,6 @@ def conversation_to_string(conversation, to_string=False, add_date=True):
                 out.append(s)
 
     return out
-
-
 
 def loadAllConversationsToMemory(conversations, ai_prefix, human_prefix):
     out = []

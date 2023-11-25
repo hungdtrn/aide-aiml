@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 from datetime import datetime
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -28,17 +29,25 @@ class Retriever:
 
         documents = []
         for conversation in conversations:
-            text = "\n".join(conversation_to_string(conversation, to_string=False))
-            chunks = self.text_splitter.split_text(text)
-            for chunk in chunks:
-                documents.append(Document(page_content=chunk))
+            text = conversation.get("information", [])
+            text = "\n".join(text)
+
+            if text:
+                chunks = self.text_splitter.split_text(text)
+                for chunk in chunks:
+                    documents.append(Document(page_content=chunk))
+
+        if not documents:
+            self.db = Chroma(embedding_function=self.embedding)
+            return 
 
         if vector_db_type == "chroma":
         # Ensure that a recent version of SQLite3 is used
         # Chroma requires SQLite3 version >= 3.35.0
         # See https://gist.github.com/defulmere/8b9695e415a44271061cc8e272f3c300
-            __import__("sqlite3")
-            sys.modules["sqlite3"] = sys.modules.pop("sqlite3")
+            if sys.platform == "linux":
+                __import__("pysqlite3")
+                sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
             self.db = Chroma.from_documents(documents, self.embedding)
         else:
             raise Exception("Not implemented")

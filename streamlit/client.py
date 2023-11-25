@@ -69,3 +69,6 @@ def chatStream(obj):
     """
     obj["streaming"] = True
     return post("chat", server_url, obj, stream=True)
+
+def get_chat_history(obj):
+    return post("chat_history", server_url, obj)
