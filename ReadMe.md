@@ -8,7 +8,7 @@ Competition entry for the [ML/A.I Hack-a-thon 2023](https://www.aihackmelb.com) 
 
 Welcome judges, thanks for taking the time to review our competition entry !
 
-***TODO: Insert YouTube competition entry video here***
+**Competition submission: [YouTube 5 minute presentation here](https://youtu.be/bCna4If9AO4)**
 
 ## GitHub source code repositories
 
@@ -24,7 +24,7 @@ Andy spoke with the ML/A.I hack-a-thon organizers prior to the event to ensure t
 
 ## System architecture overview
 
-***TODO: Insert architecture overview diagram here***
+![AIDE system diagram](resources/aide_system_diagram.png)
 
 ## Development team members
 
