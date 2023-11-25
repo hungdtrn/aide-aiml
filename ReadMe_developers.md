@@ -41,6 +41,8 @@ The Application server is used by the Streamlit UI and Voice UI servers and must
 *Current working directory: Top-level of the aide-aiml repository*
 
     export OPENAI_API_KEY="sk-........"
+    export OPENAI_TEMPERATURE=0.05  # Optional: Good for testing
+    export DETERMINISTIC=True       # Optional: Good for testing
     python server/server.py
     # Running on http://127.0.0.1:8080  <-- REST API only, not HTML / HTTP
 
