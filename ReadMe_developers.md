@@ -12,7 +12,7 @@ user interface front-ends.
 - Streamlit User Interface server
 - Voice User Interface server
 
-***TODO: Insert architecture overview diagram here***
+![AIDE system diagram](resources/aide_system_diagram.png)
 
 ## Local installation and run the system
 
@@ -72,7 +72,7 @@ The Streamlit UI server provides standard web server (HTML / HTTP endpoint) that
 
 The Voice UI server provides a conversation interface for non-technical users, especially the patient under care.
 
-*** TBC: Voice UI diagram ***
+![AIDE system diagram](resources/aide_voice_user_interface.png)
 
 *** TBC: aiko_services sub-module ***
 
