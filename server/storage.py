@@ -6,8 +6,8 @@ from google.cloud import storage
 # Only use GCS bucket when BUCKET_NAME is defined, otherwise use local storage
 USE_BUCKET = "BUCKET_NAME" in os.environ
 
-STORAGE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./localStorage")
-DUMMY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./initialData")
+STORAGE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "localStorage")
+MOCKDATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mockData")
 
 def bucket():
     return storage.Client().bucket(os.environ.get('BUCKET_NAME'))

@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
 import json
@@ -11,6 +12,15 @@ from utils import get_now, get_today, insights_from_description, get_conversatio
 from ai import VERSION, MODELS, build_chat_session, build_summariser, build_chat_retriever
 
 AI_MODEL = MODELS.CHATGPT
+
+
+print("---------- For the first time: Initialise data --------")
+if not os.path.exists(storage.STORAGE_PATH):
+    os.mkdir(storage.STORAGE_PATH)
+for folderName in os.listdir(storage.MOCKDATA_PATH):
+    if not os.path.exists(os.path.join(storage.STORAGE_PATH, folderName)):
+        shutil.copytree(os.path.join(storage.MOCKDATA_PATH, folderName), os.path.join(storage.STORAGE_PATH, folderName))
+
 
 print("----------- Preparing and Processing the data. This may take while --------")
 process_data_for_demo()
@@ -379,12 +389,6 @@ def preriodicSaveSummary():
 
 if __name__ == "__main__":
     "Create dummy data"
-    import shutil
-    if not os.path.exists(storage.STORAGE_PATH):
-        os.mkdir(storage.STORAGE_PATH)
-    for folderName in os.listdir(storage.DUMMY_PATH):
-        if not os.path.exists(os.path.join(storage.STORAGE_PATH, folderName)):
-            shutil.copytree(os.path.join(storage.DUMMY_PATH, folderName), os.path.join(storage.STORAGE_PATH, folderName))
 
 
     app.run(host='0.0.0.0', debug="True", port=8080)
