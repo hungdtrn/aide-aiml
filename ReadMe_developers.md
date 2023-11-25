@@ -19,7 +19,7 @@ user interface front-ends.
 #### Prerequisites
 
 - OpenAI API key: [See your OpenAPI account for acquiring an API key](https://platform.openai.com/api-keys)
-- Recent version of Python 3.10.x or 3.11.x
+- Recent version of Python 3.10.x (tested) or 3.11.x
 
 ### Local installation
 
@@ -61,104 +61,102 @@ The Streamlit UI server provides standard web server (HTML / HTTP endpoint) that
 
 ### Run the Streamlit UI server on Streamlit Community Cloud
 
-1. Fork the repo and sync any changes.
-2. Go to Strealit Community Cloud: https://streamlit.io/cloud
-3. Create a new app and link it to the forked repo
-4. Deploy the streamlit app
+- Fork the repo and sync any changes.
+- Go to Strealit Community Cloud: https://streamlit.io/cloud
+- Create a new app and link it to the forked repo
+- Deploy the streamlit app
 
 ### Run the Voice User Interface server
 
 The Voice UI server provides a conversation interface for non-technical users, especially the patient under care.
 
-***TO BE COMPLETED ***
+*** TBC: Voice UI diagram ***
+
+*** TBC: aiko_services sub-module ***
+
+### Environment variable set-up (.env file)
+
+Create a `.env` file with the following environment variables ...
+
+    APPLICATION_SERVER='GCP' <-- Set as 'local' when testing connection to local server
+    GCP_SERVER_URL="https://aide-server-ogdrzymura-km.a.run.app" <-- replace with your GCP URL
+    LOCAL_SERVER_URL="http://127.0.0.1:8080" <-- replace with your local host server URL
+
+Depending upon the changes made, you may need to redeploy your **application server** and/or **streamlit** server for those changes to take effect
 
 ## Cloud vendor (GCP) deployment and run the system
 
 ### Initial GCP environment set-up
-```
-. set_env.sh
-gcloud config set project $PROJECT
-gcloud services enable \
-    compute.googleapis.com \
-    secretmanager.googleapis.com \
-    artifactregistry.googleapis.com \
-    cloudfunctions.googleapis.com \
-    cloudscheduler.googleapis.com
-```
+
+    . set_env.sh
+    gcloud config set project $PROJECT
+    gcloud services enable \
+        compute.googleapis.com \
+        secretmanager.googleapis.com \
+        artifactregistry.googleapis.com \
+        cloudfunctions.googleapis.com \
+        cloudscheduler.googleapis.com
 
 ### Create GCP secrets
 
-Create GCP secret OPENAI_API_KEY and add IAM policy for service account access to the secret:
-```
-OPENAI_API_KEY=<OPENAI_API_KEY>
-MAILGUN_API_KEY=<MAILGUN_API_KEY>
-. set_env.sh
-echo -n $OPENAI_API_KEY | gcloud secrets create OPENAI_API_KEY --project $PROJECT --data-file=-
-echo -n $MAILGUN_API_KEY | gcloud secrets create MAILGUN_API_KEY --project $PROJECT --data-file=-
+Create GCP secret `OPENAI_API_KEY` and add IAM policy for service account access to the secret:
 
-gcloud projects add-iam-policy-binding $PROJECT \
-    --member=serviceAccount:${PROJECT_ID}-compute@developer.gserviceaccount.com \
-    --role=roles/secretmanager.secretAccessor \
-    --role=roles/iam.serviceAccountUser \
-    --role=roles/storage.admin
+    OPENAI_API_KEY=<OPENAI_API_KEY>
+    MAILGUN_API_KEY=<MAILGUN_API_KEY>
+    . set_env.sh
+    echo -n $OPENAI_API_KEY | gcloud secrets create OPENAI_API_KEY --project $PROJECT --data-file=-
+    echo -n $MAILGUN_API_KEY | gcloud secrets create MAILGUN_API_KEY --project $PROJECT --data-file=-
 
-gcloud secrets add-iam-policy-binding OPENAI_API_KEY \
-  --member="serviceAccount:${PROJECT_ID}-compute@developer.gserviceaccount.com \
-  --role="roles/secretmanager.secretAccessor"
+    gcloud projects add-iam-policy-binding $PROJECT \
+        --member=serviceAccount:${PROJECT_ID compute@developer.gserviceaccount.com \
+        --role=roles/secretmanager.secretAccessor \
+        --role=roles/iam.serviceAccountUser \
+        --role=roles/storage.admin
 
-gcloud secrets add-iam-policy-binding MAILGUN_API_KEY \
-  --member="serviceAccount:${PROJECT_ID}-compute@developer.gserviceaccount.com \
-  --role="roles/secretmanager.secretAccessor"
+    gcloud secrets add-iam-policy-binding OPENAI_API_KEY \
+      --member="serviceAccount:${PROJECT_ID}-compute@developer.gserviceaccount.com \
+      --role="roles/secretmanager.secretAccessor"
 
-gcloud iam service-accounts create ${SCHEDULER_SERVICE_ACCOUNT}
+    gcloud secrets add-iam-policy-binding MAILGUN_API_KEY \
+      --member="serviceAccount:${PROJECT_ID}-compute@developer.gserviceaccount.com \
+      --role="roles/secretmanager.secretAccessor"
 
-gcloud projects add-iam-policy-binding ${PROJECT_ID} \
-  --member="serviceAccount:${SCHEDULER_SERVICE_ACCOUNT}@${PROJECT}.iam.gserviceaccount.com" \
-  --role="roles/run.invoker" \
-  --role="roles/cloudscheduler.serviceAgent" \
-  --role="roles/storage.admin"
+    gcloud iam service-accounts create ${SCHEDULER_SERVICE_ACCOUNT}
 
-gcloud storage buckets create gs://$BUCKET_NAME --project ${PROJECT} \
-    --location $FUNCTION_REGION --default-storage-class=STANDARD
+    gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+      --member="serviceAccount:${SCHEDULER_SERVICE_ACCOUNT}@${PROJECT}.iam.gserviceaccount.com" \
+      --role="roles/run.invoker" \
+      --role="roles/cloudscheduler.serviceAgent" \
+      --role="roles/storage.admin"
 
-#gcloud scheduler jobs delete daily_notification-job --quiet --project $PROJECT --location $SCHEDULER_REGION
+    gcloud storage buckets create gs://$BUCKET_NAME --project ${PROJECT} \
+        --location $FUNCTION_REGION --default-storage-class=STANDARD
 
-gcloud scheduler jobs create http daily_notification-job \
-  --project $PROJECT \
-  --location $SCHEDULER_REGION \
-  --schedule "$SCHEDULE" \
-  --time-zone "Australia/Sydney" \
-  --uri "$SCHEDULED_DAILY_NOTIFICATION_URI" \
-  --http-method GET \
-  --message-body '{"name": "Scheduler"}' \
-  --oidc-service-account-email ${SCHEDULER_SERVICE_ACCOUNT}@${PROJECT}.iam.gserviceaccount.com
-```
+### GCP scheduler
+
+    gcloud scheduler jobs delete daily_notification-job --quiet --project $PROJECT --location $SCHEDULER_REGION
+
+    gcloud scheduler jobs create http daily_notification-job \
+      --project $PROJECT \
+      --location $SCHEDULER_REGION \
+      --schedule "$SCHEDULE" \
+      --time-zone "Australia/Sydney" \
+      --uri "$SCHEDULED_DAILY_NOTIFICATION_URI" \
+      --http-method GET \
+      --message-body '{"name": "Scheduler"}' \
+      --oidc-service-account-email ${SCHEDULER_SERVICE_ACCOUNT}@${PROJECT}.iam.gserviceaccount.com
 
 ### Deploy application server to GCP and run
 
-```
-./server/deploy.sh
-```
+    ./server/deploy.sh
 
 ### GCP clean-up
 
-```
-. set_env.sh
-gcloud run services delete aide-server --quiet --project $PROJECT --region=$REGION
-```
+    . set_env.sh
+    gcloud run services delete aide-server --quiet --project $PROJECT --region=$REGION
 
 ## Build Docker image
 
     cd server
     docker build -f Dockerfile -t aide .
     docker run --rm aide
-
-## Crete .env file
-
-Create a .env file with the following variables:
-
-  APPLICATION_SERVER='GCP' <-- Set as 'local' when testing connection to local server
-  GCP_SERVER_URL="https://aide-server-ogdrzymura-km.a.run.app" <-- replace with your GCP URL
-  LOCAL_SERVER_URL="http://127.0.0.1:8080" <-- replace with your local host server URL
-
-You may need to redeploy your application server and streamlit server for the changes to take effect
